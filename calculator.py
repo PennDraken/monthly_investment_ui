@@ -3,7 +3,7 @@ import numpy as np
 def calculate_monthly_capital(lumpsum, savings_list, rate):
     rate_frac = 1 + rate
     capital = lumpsum
-    capital_monthly_history = []
+    capital_monthly_history = [capital]
     for monthly_savings in savings_list:
         for _ in range(12):
             # Monthly compund

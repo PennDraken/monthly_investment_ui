@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
 from ttkthemes import ThemedStyle
+import numpy as np
+from calculator import calculate_monthly_capital
 
 def create_labeled_section(parent, label_text, row, from_=0, to=100, step=1, default_value=0, unit=""):
     """Helper function to create a section with a label, entry, slider, and unit label."""
@@ -72,15 +74,16 @@ create_labeled_section(left_frame, "Lumpsum", row=0, from_=0, to=1_000_000, step
 create_labeled_section(left_frame, "Interest Rate", row=1, from_=0, to=20, step=1, default_value=7, unit="%")
 create_labeled_section(left_frame, "Years", row=2, from_=1, to=50, step=1, default_value=10, unit="years")
 
+num_columns = int(left_frame.winfo_children()[2].winfo_children()[1].get())
+points = np.zeros(num_columns)  # Store points clicked on by the user
 
 # Create the dynamic grid in the bottom left section based on the number of years
 def create_interactive_grid():
+    global points
     # Get the number of years value
     years = int(left_frame.winfo_children()[2].winfo_children()[1].get())  # Years value
     num_columns = years
-    num_rows = 40  # Number of rows fixed at 40
-    points = []  # Store points clicked on by the user
-    
+    num_rows = 20  # Number of rows fixed at 40
 
     # Helper function for drawing the points on click
     def draw_point(event, column_index):
@@ -89,30 +92,39 @@ def create_interactive_grid():
         frame_height = canvas.winfo_height()
 
         # Calculate row and column from mouse click
-        row_index = int(event.y // (frame_height // num_rows))  # Use current frame height
-        col_index = int(event.x // (frame_width // num_columns))
-        points.append((col_index, row_index))  # Store the (column, row) clicked
+        row_index = num_rows - int((event.y + (frame_height // (2 * num_rows))) // (frame_height // num_rows))
+        col_index = int((event.x + (frame_width // (2 * num_columns))) // (frame_width // num_columns))
+        
+        points[col_index] = row_index
+
         draw_all_points()
 
     def draw_all_points():
+        update_grid()
         frame_width = canvas.winfo_width()
         frame_height = canvas.winfo_height()
-        for column, row in points:
+        r = 5
+        for column, row in enumerate(points):
             canvas.create_oval(
-                (frame_width / num_columns) * column + 2, (frame_height / num_rows) * row + 2,
-                (frame_width / num_columns) * column + 15, (frame_height / num_rows) * row + 15,
+                (frame_width / num_columns) * column - r, (frame_height / num_rows) * (num_rows - row) - r,
+                (frame_width / num_columns) * column + r, (frame_height / num_rows) * (num_rows - row) + r,
                 fill="red", outline="red"
+            )
+            canvas.create_line(
+                (frame_width / num_columns) * column, (frame_height / num_rows) * (num_rows - row),
+                (frame_width / num_columns) * column, (frame_height / num_rows) * (num_rows),
+                fill="red", width=r
             )
 
     # Create the frame for interactive grid
     grid_frame = tk.Frame(left_frame, bg="gray")
-    grid_frame.grid(row=3, column=0, pady=10, sticky="nsew")
+    grid_frame.grid(row=3, column=0, pady=0, sticky="nsew")
     grid_frame.grid_rowconfigure(0, weight=1)
     grid_frame.grid_columnconfigure(0, weight=1)
 
     # Set canvas and allow resizing to fill the grid container
     canvas = tk.Canvas(grid_frame, bg="white")
-    canvas.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+    canvas.grid(row=0, column=0, padx=0, pady=0, sticky="nsew")
 
     # Helper function to update grid
     def update_grid(event=None):
@@ -141,6 +153,49 @@ def create_interactive_grid():
     # Bind click event on canvas to add point
     canvas.bind("<Button-1>", lambda event: draw_point(event, 0))  # Keep `column_index=0` for now
 
+def calculate():
+    print("Pressed calculate")
+    lumpsum = int(left_frame.winfo_children()[0].winfo_children()[1].get())
+    rate    = int(left_frame.winfo_children()[1].winfo_children()[1].get()) / 100
+    monthly_savings = points * 1000
+    y_points = np.array(calculate_monthly_capital(lumpsum, monthly_savings, rate))
+    print(y_points)
+    # Plot the points
+    canvas = tk.Canvas(result_frame, bg="gray")
+    canvas.grid(row=0, column=0, padx=0, pady=0, sticky="nsew")
+    result_frame.grid_rowconfigure(0, weight=1)
+    result_frame.grid_columnconfigure(0, weight=1)
+    frame_width = result_frame.winfo_width()
+    frame_height = result_frame.winfo_height()
+
+    # Clear previous grid (optional, to prevent overlap on resize)
+    canvas.delete("all")
+
+    # Draw function
+    col_width = frame_width / len(y_points)
+    row_height = frame_height / max(y_points)
+    r = 5
+    for column, row in enumerate(y_points):
+        canvas.create_oval(
+            col_width * column - r, frame_height - row_height * row - r,
+            col_width * column + r, frame_height - row_height * row + r,
+            fill="black", outline="black"
+        )
+    # Show first and last value
+    # Show first value (position at the left edge)
+    canvas.create_text(
+    0 * col_width,  # X position at the left side of the canvas
+    frame_height - y_points[0] * row_height,  # Y position for the first value
+    text=f"{y_points[0]:,.0f} kr".replace(",", " "), fill="white", font=("Arial", 36), anchor="w"
+)
+
+    # Show last value (position at the right edge)
+    canvas.create_text(
+        (len(y_points) - 1) * col_width,  # X position at the right side of the canvas
+        frame_height - (y_points[-1] * row_height) * 0.9,  # Y position for the last value
+        text=f"{y_points[-1]:,.0f} kr".replace(",", " "), fill="white", font=("Arial", 36), anchor="e"
+    )
+
 
 
 # Initialize interactive grid after "Years" value
@@ -150,8 +205,11 @@ create_interactive_grid()
 label_right = ttk.Label(right_frame, text="Result", font=("Arial", 16), background="#2e2e2e", foreground="white")
 label_right.grid(row=0, column=0, padx=20, pady=20, sticky="w")
 
-empty_frame = tk.Frame(right_frame, bg="gray")
-empty_frame.grid(row=1, column=0, padx=20, pady=20, sticky="nsew")
+result_right = ttk.Button(right_frame, text="Calculate", command=calculate)
+result_right.grid(row=2, column=0, padx=20, pady=20, sticky="w")
+
+result_frame = tk.Frame(right_frame, bg="gray")
+result_frame.grid(row=1, column=0, padx=20, pady=20, sticky="nsew")
 
 # Configure grid weights
 root.grid_rowconfigure(0, weight=1)
