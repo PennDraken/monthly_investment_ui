@@ -48,9 +48,19 @@
 
       <!-- Right Panel: Results -->
       <section id="results-section" class="right-panel">
-        <label for="result-frame">Result</label>
-        <div id="empty-frame" class="empty-frame">
-            <canvas id="resultCanvas"></canvas>
+        <div class="input-group">
+            <label for="result-frame">Graph</label>
+            <div id="empty-frame" class="empty-frame">
+                <canvas id="resultCanvas"></canvas>
+            </div>
+        </div>
+
+        <!-- Added Label with Text Below the Result Diagram -->
+        <div id="final-value-section" class="final-value-section">
+          <label for="final-value">Final value after <span id="year-label">x</span> years</label>
+          <div id="final-value-text" class="final-value-text">
+            <strong id="final-value-number">--</strong> kr
+          </div>
         </div>
       </section>
     </main>

@@ -1,4 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
+
+    function formatNumberWithSpaces(number) {
+        return new Intl.NumberFormat('sv-SE').format(number); // 'sv-SE' for Swedish locale (spaces as thousand separators)
+    }
+    
     // Get references to all input elements
     const lumpsumInput = document.getElementById('lumpsum');
     const lumpsumSlider = document.getElementById('lumpsum-slider');
@@ -8,6 +13,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const yearsSlider = document.getElementById('years-slider');
     const resultCanvas = document.getElementById('resultCanvas');
     const resultContext = resultCanvas.getContext("2d");
+    const finalValueText = document.getElementById('final-value-number');
+    const yearLabel = document.getElementById('year-label');
 
     // Function to update values when slider changes
     // Set up event listeners for the sliders and inputs
@@ -48,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // let barData = [0, 10000, 0, 5000, 6000]; // Heights of bars
     let barData = new Array(50).fill(1000);
     // Maximum possible height for a bar
-    const MAX_BAR_HEIGHT = 30000; // This corresponds to 30,000 in scale.
+    const MAX_BAR_HEIGHT = 20000; // This corresponds to 30,000 in scale.
 
     // Define the snap value (this can be easily adjusted in one place now)
     const SNAP_VALUE = 1000; // Snap to the closest multiple of 1000
@@ -77,13 +84,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const barWidth = calculateBarWidth(); // Get dynamic bar width
         const maxBarHeight = canvas.height; // Max height constraint for bars
         const years = parseInt(yearsInput.value);
-
+        const maxValue = Math.max(...barData);
+        const tempMaxValue = Math.max(MAX_BAR_HEIGHT, maxValue + 5000)
+// 
         // Loop through the bar data and draw the bars
         for (let i = 0; i < years; i++) {
             const x = i * barWidth; // X position for each bar, no spacing
             const originalHeight = barData[i]; // Original height based on barData
 
-            const height = Math.min(maxBarHeight, (originalHeight / MAX_BAR_HEIGHT) * canvas.height);
+            const height = Math.min(maxBarHeight, (originalHeight / tempMaxValue) * canvas.height);
             const y = canvas.height - height; // Y position is calculated inversely from the bottom
 
             ctx.fillStyle = "skyblue";
@@ -121,6 +130,8 @@ document.addEventListener("DOMContentLoaded", () => {
         updateCanvasSize(); // Dynamically update canvas size on click
 
         const barWidth = calculateBarWidth(); // Get the updated bar width
+        const maxValue = Math.max(...barData)
+        const tempMaxValue = Math.max(MAX_BAR_HEIGHT, maxValue + 5000)
 
         for (let i = 0; i < barData.length; i++) {
             const x = i * barWidth;
@@ -128,7 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (mouseX >= x && mouseX <= x + barWidth) {
                 const pixelHeight = Math.max(0, canvas.height - mouseY);
                 // Convert the pixel height to the corresponding bar value
-                const newHeight = (pixelHeight / canvas.height) * MAX_BAR_HEIGHT;
+                const newHeight = (pixelHeight / canvas.height) * tempMaxValue;
                 // Snap the new height to the nearest multiple of SNAP_VALUE
                 const snappedHeight = Math.round(newHeight / SNAP_VALUE) * SNAP_VALUE;
 
@@ -175,6 +186,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Draw the result graph
         drawGraph(capitalHistory);
+
+        finalValueText.textContent = formatNumberWithSpaces(Math.max(...capitalHistory).toFixed(0));
+        yearLabel.textContent = years;
     }
 
     // Function to draw the capital history on the result canvas
