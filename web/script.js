@@ -1,4 +1,36 @@
 document.addEventListener("DOMContentLoaded", () => {
+    // Get references to all input elements
+    const lumpsumInput = document.getElementById('lumpsum');
+    const lumpsumSlider = document.getElementById('lumpsum-slider');
+    const interestRateInput = document.getElementById('interest-rate');
+    const interestRateSlider = document.getElementById('interest-rate-slider');
+    const yearsInput = document.getElementById('years');
+    const yearsSlider = document.getElementById('years-slider');
+    const calculateButton = document.getElementById('calculate-button');
+    const resultsDisplay = document.getElementById('results-display');
+
+    // Function to update values when slider changes
+    lumpsumSlider.addEventListener('input', () => {
+    lumpsumInput.value = lumpsumSlider.value;
+    });
+    interestRateSlider.addEventListener('input', () => {
+    interestRateInput.value = interestRateSlider.value;
+    });
+    yearsSlider.addEventListener('input', () => {
+    yearsInput.value = yearsSlider.value;
+    });
+
+    // Function to update values when text input changes
+    lumpsumInput.addEventListener('input', () => {
+    lumpsumSlider.value = lumpsumInput.value;
+    });
+    interestRateInput.addEventListener('input', () => {
+    interestRateSlider.value = interestRateInput.value;
+    });
+    yearsInput.addEventListener('input', () => {
+    yearsSlider.value = yearsInput.value;
+    });
+
     const canvas = document.getElementById("barChartCanvas");
     const ctx = canvas.getContext("2d");
   
@@ -50,8 +82,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       };
       
-      
-  
     // Initial scale and draw
     drawBars();
   
@@ -81,5 +111,23 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
     });
+
+    function calculateMonthlyCapital(lumpsum, savingsList, rate) {
+        const rateFrac = 1 + rate;
+        let capital = lumpsum;
+        const capitalMonthlyHistory = [capital];
+        
+        savingsList.forEach(monthlySavings => {
+            for (let i = 0; i < 12; i++) {
+                // Monthly compound
+                capital += monthlySavings;
+                capital = capital * Math.pow(rateFrac, 1 / 12);
+                capitalMonthlyHistory.push(capital);
+            }
+        });
+    
+        return capitalMonthlyHistory;
+    }
+    
   });
   
