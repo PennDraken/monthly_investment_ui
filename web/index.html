@@ -10,7 +10,7 @@
 <body>
   <div id="app" class="app-container">
     <header class="header">
-      <h1>Themed Investment UI</h1>
+      <h1>Varying Monthly Investment Calculator</h1>
     </header>
 
     <main class="main-content">
@@ -35,6 +35,14 @@
           <input type="number" id="years" value="10" step="1" />
           <span class="unit">years</span>
           <input type="range" id="years-slider" min="1" max="50" step="1" value="10" />
+        </div>
+
+        <!-- Monthly savings/year Frame (Added Below Years Input) -->
+        <div class="input-group">
+          <label for="monthly-savings-frame">Monthly savings/year</label>
+          <div id="empty-frame" class="empty-frame">
+            <canvas id="barChartCanvas"></canvas>
+          </div>          
         </div>
       </section>
 
