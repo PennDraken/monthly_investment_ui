@@ -1,4 +1,16 @@
-/* General Styling */
+@media (max-aspect-ratio: 3/4) {
+    .main-content {
+      display: flex;
+      flex-direction: column; /* Stack panels vertically */
+    }
+  
+    .left-panel,
+    .right-panel {
+      width: 100%;
+    }
+  }
+  
+
 body {
     margin: 0;
     font-family: Arial, sans-serif;
