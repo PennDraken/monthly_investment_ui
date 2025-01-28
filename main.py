@@ -4,7 +4,7 @@ from ttkthemes import ThemedStyle
 import numpy as np
 from calculator import calculate_monthly_capital
 
-def create_labeled_section(parent, label_text, row, from_=0, to=100, step=1, default_value=0, unit=""):
+def create_labeled_section(parent, label_text, row, from_=0, to=100, step=1, default_value=0, unit="", on_value_change=None):
     """Helper function to create a section with a label, entry, slider, and unit label."""
     frame = tk.Frame(parent, bg=parent["bg"])
     frame.grid(row=row, column=0, pady=10, sticky="nsew")
@@ -14,13 +14,13 @@ def create_labeled_section(parent, label_text, row, from_=0, to=100, step=1, def
     label.grid(row=0, column=0, padx=20, pady=10, sticky="w")
 
     # Entry to display the value
-    entry = ttk.Entry(frame, font=("Arial", 16), justify="right")
+    entry = ttk.Entry(frame, font=("Arial", 24, "bold"), justify="right")
     entry.grid(row=1, column=0, padx=20, pady=10, sticky="ew")
 
     # Slider for input
     slider = ttk.Scale(
         frame, from_=from_, to=to, orient="horizontal", length=400,
-        command=lambda val: update_slider(val, entry, step)
+        command=lambda val: update_slider(val, entry, step, on_value_change)
     )
     slider.grid(row=1, column=1, padx=20, pady=10, sticky="ew")
 
@@ -33,7 +33,7 @@ def create_labeled_section(parent, label_text, row, from_=0, to=100, step=1, def
         snapped_value = round(default_value / step) * step
         slider.set(snapped_value)  # Set slider to the default value
         entry.delete(0, tk.END)   # Clear the entry box
-        entry.insert(0, f"{int(snapped_value)}")  # Insert the default value
+        entry.insert(0, f"{int(snapped_value):,.0f}".replace(",", " "))
 
     initialize_slider()
 
@@ -45,13 +45,14 @@ def create_labeled_section(parent, label_text, row, from_=0, to=100, step=1, def
     return frame
 
 
-def update_slider(value, entry_widget, step):
+def update_slider(value, entry_widget, step, on_value_change=None):
     """Round the slider value to the nearest multiple of step and update entry with no decimals."""
     value = float(value)
     snapped_value = round(value / step) * step
     entry_widget.delete(0, tk.END)
-    entry_widget.insert(0, f"{int(snapped_value)}")
-
+    entry_widget.insert(0, f"{int(snapped_value):,.0f}".replace(",", " "))
+    if on_value_change:
+        on_value_change(snapped_value)
 
 # Main window setup
 root = tk.Tk()
@@ -69,51 +70,55 @@ right_frame = tk.Frame(root, bg="#2e2e2e")
 left_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
 right_frame.grid(row=0, column=1, padx=20, pady=20, sticky="nsew")
 
-# Labeled sections with default values and units
-create_labeled_section(left_frame, "Lumpsum", row=0, from_=0, to=1_000_000, step=10_000, default_value=100_000, unit="kr")
-create_labeled_section(left_frame, "Interest Rate", row=1, from_=0, to=20, step=1, default_value=7, unit="%")
-create_labeled_section(left_frame, "Years", row=2, from_=1, to=50, step=1, default_value=10, unit="years")
-
-num_columns = int(left_frame.winfo_children()[2].winfo_children()[1].get())
-points = np.zeros(num_columns)  # Store points clicked on by the user
+default_years = 10
+monthly_investment_points = np.zeros(default_years)  # Store points clicked on by the user
 
 # Create the dynamic grid in the bottom left section based on the number of years
 def create_interactive_grid():
-    global points
+    global monthly_investment_points
     # Get the number of years value
     years = int(left_frame.winfo_children()[2].winfo_children()[1].get())  # Years value
     num_columns = years
-    num_rows = 20  # Number of rows fixed at 40
+    num_rows = 20
 
     # Helper function for drawing the points on click
     def draw_point(event, column_index):
+        global monthly_investment_points
         # Dynamically fetch the current canvas dimensions
         frame_width = canvas.winfo_width()
         frame_height = canvas.winfo_height()
+        years = int(left_frame.winfo_children()[2].winfo_children()[1].get())  # Years value
+        num_columns = years
+
 
         # Calculate row and column from mouse click
         row_index = num_rows - int((event.y + (frame_height // (2 * num_rows))) // (frame_height // num_rows))
         col_index = int((event.x + (frame_width // (2 * num_columns))) // (frame_width // num_columns))
         
-        points[col_index] = row_index
+        monthly_investment_points[col_index] = row_index
 
         draw_all_points()
 
     def draw_all_points():
+        global monthly_investment_points
         update_grid()
+
         frame_width = canvas.winfo_width()
         frame_height = canvas.winfo_height()
-        r = 5
-        for column, row in enumerate(points):
+        years = int(left_frame.winfo_children()[2].winfo_children()[1].get())  # Years value
+        num_columns = years
+
+        r = int(frame_width / num_columns / 8)
+        for column, row in enumerate(monthly_investment_points):
             canvas.create_oval(
                 (frame_width / num_columns) * column - r, (frame_height / num_rows) * (num_rows - row) - r,
                 (frame_width / num_columns) * column + r, (frame_height / num_rows) * (num_rows - row) + r,
-                fill="red", outline="red"
+                fill="white", outline="white"
             )
             canvas.create_line(
                 (frame_width / num_columns) * column, (frame_height / num_rows) * (num_rows - row),
                 (frame_width / num_columns) * column, (frame_height / num_rows) * (num_rows),
-                fill="red", width=r
+                fill="white", width=r
             )
 
     # Create the frame for interactive grid
@@ -123,7 +128,7 @@ def create_interactive_grid():
     grid_frame.grid_columnconfigure(0, weight=1)
 
     # Set canvas and allow resizing to fill the grid container
-    canvas = tk.Canvas(grid_frame, bg="white")
+    canvas = tk.Canvas(grid_frame, bg="gray")
     canvas.grid(row=0, column=0, padx=0, pady=0, sticky="nsew")
 
     # Helper function to update grid
@@ -131,6 +136,9 @@ def create_interactive_grid():
         # Get actual width and height of grid frame
         frame_width = grid_frame.winfo_width()
         frame_height = grid_frame.winfo_height()
+        years = int(left_frame.winfo_children()[2].winfo_children()[1].get())  # Years value
+        num_columns = years
+
 
         # Clear previous grid (optional, to prevent overlap on resize)
         canvas.delete("all")
@@ -149,16 +157,42 @@ def create_interactive_grid():
 
     # Initial draw of the grid
     update_grid()
-
+    draw_all_points()
     # Bind click event on canvas to add point
-    canvas.bind("<Button-1>", lambda event: draw_point(event, 0))  # Keep `column_index=0` for now
+    canvas.bind("<Button-1>", lambda event: draw_point(event, 0))
+
+
+def update_years(years):
+    global monthly_investment_points
+    # monthly_investment_points = np.zeros(value)  # Update points array with new years value
+    monthly_investment_points = np.pad(monthly_investment_points, 0)
+    create_interactive_grid()  # Redraw the grid with the new years count
+
+
+# Labeled sections with default values and units
+create_labeled_section(left_frame, "Lumpsum", row=0, from_=0, to=1_000_000, step=10_000, default_value=100_000, unit="kr")
+create_labeled_section(left_frame, "Interest Rate", row=1, from_=0, to=20, step=1, default_value=7, unit="%")
+create_labeled_section(
+    left_frame, "Years", row=2, from_=1, to=50, step=1, default_value=default_years, unit="years",
+    on_value_change=lambda value: update_years(int(value))
+)
+
+
+
+num_columns = int(left_frame.winfo_children()[2].winfo_children()[1].get())
+monthly_investment_points = np.zeros(num_columns)  # Store points clicked on by the user
+
+
+
 
 def calculate():
     print("Pressed calculate")
-    lumpsum = int(left_frame.winfo_children()[0].winfo_children()[1].get())
-    rate    = int(left_frame.winfo_children()[1].winfo_children()[1].get()) / 100
-    monthly_savings = points * 1000
-    y_points = np.array(calculate_monthly_capital(lumpsum, monthly_savings, rate))
+    # Need to fix formatting
+    lumpsum = int(left_frame.winfo_children()[0].winfo_children()[1].get().replace(" ", ""))
+    rate    = int(left_frame.winfo_children()[1].winfo_children()[1].get().replace(" ", "")) / 100
+    years   = int(left_frame.winfo_children()[2].winfo_children()[1].get().replace(" ", ""))
+    monthly_savings = monthly_investment_points * 1000
+    y_points = np.array(calculate_monthly_capital(lumpsum, monthly_savings[:years], rate))
     print(y_points)
     # Plot the points
     canvas = tk.Canvas(result_frame, bg="gray")
@@ -184,10 +218,10 @@ def calculate():
     # Show first and last value
     # Show first value (position at the left edge)
     canvas.create_text(
-    0 * col_width,  # X position at the left side of the canvas
-    frame_height - y_points[0] * row_height,  # Y position for the first value
-    text=f"{y_points[0]:,.0f} kr".replace(",", " "), fill="white", font=("Arial", 36), anchor="w"
-)
+        0 * col_width,  # X position at the left side of the canvas
+        frame_height - y_points[0] * row_height,  # Y position for the first value
+        text=f"{y_points[0]:,.0f} kr".replace(",", " "), fill="white", font=("Arial", 36), anchor="w"
+    )
 
     # Show last value (position at the right edge)
     canvas.create_text(
