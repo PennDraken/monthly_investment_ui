@@ -145,7 +145,6 @@ canvas {
 canvas {
     width: 100%;
     max-width: 600px;
-    height: 250px;
     background-color: #121212;
     border-radius: 8px;
     cursor: pointer; /* Make it feel interactive */
