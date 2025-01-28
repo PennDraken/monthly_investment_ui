@@ -2,9 +2,12 @@
     .main-content {
       display: flex;
       flex-direction: column; /* Stack panels vertically */
+      align-items: center;
     }
   
-    .left-panel,
+    .left-panel {
+        width: 100%;
+      }
     .right-panel {
       width: 100%;
     }
@@ -19,6 +22,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    overflow-x: hidden;
 }
 
 header {
