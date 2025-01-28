@@ -2,79 +2,82 @@ document.addEventListener("DOMContentLoaded", () => {
     const canvas = document.getElementById("barChartCanvas");
     const ctx = canvas.getContext("2d");
   
-    // Sample data for bars (initial y-values will be adjusted based on user clicks)
-    let barData = [50, 100, 150, 200, 250]; // Heights of bars
+    // Sample data for bars (initial values that will be adjusted to the range of 0 to 30,000)
+    let barData = [0, 10000, 0, 5000, 6000]; // Heights of bars
+  
+    // Maximum possible height for a bar
+    const MAX_BAR_HEIGHT = 30000; // This corresponds to 30,000 in scale.
+  
+    // Define the snap value (this can be easily adjusted in one place now)
+    const SNAP_VALUE = 1000; // Snap to the closest multiple of 1000
     
     // Dynamically set canvas size based on parent container
     const updateCanvasSize = () => {
-      // Update the canvas width and height based on the canvas's actual element dimensions
-      canvas.width = canvas.offsetWidth; // This uses the computed width (not just the parent width)
-      canvas.height = canvas.offsetHeight; // Similarly for height
+      canvas.width = canvas.offsetWidth; // Use actual canvas width
+      canvas.height = canvas.offsetHeight; // Use actual canvas height
     };
   
     // Calculate bar width dynamically based on the canvas size
     const calculateBarWidth = () => {
-      updateCanvasSize(); // Ensure the canvas size is up to date before calculations
-  
-      const canvasWidth = canvas.width; // Canvas width after being set
-      const barCount = barData.length; // Number of bars
-      const barWidth = canvasWidth / barCount; // Calculate the width per bar, no spacing between bars
-  
+      updateCanvasSize();
+      const canvasWidth = canvas.width;
+      const barCount = barData.length;
+      const barWidth = canvasWidth / barCount;
       return barWidth;
     };
   
     // Draw bars function
     const drawBars = () => {
-      updateCanvasSize(); // Ensure canvas size is correct before rendering
-      ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas before each redraw
+        updateCanvasSize(); // Ensure canvas size is correct before rendering
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas before each redraw
+      
+        const barWidth = calculateBarWidth(); // Get dynamic bar width
+        const maxBarHeight = canvas.height; // Max height constraint for bars
+        
+        // Loop through the bar data and draw the bars
+        for (let i = 0; i < barData.length; i++) {
+          const x = i * barWidth; // X position for each bar, no spacing
+          const originalHeight = barData[i]; // Original height based on barData
+          
+          const height = Math.min(maxBarHeight, (originalHeight / MAX_BAR_HEIGHT) * canvas.height);
+          const y = canvas.height - height; // Y position is calculated inversely from the bottom
+      
+          ctx.fillStyle = "skyblue";
+          ctx.fillRect(x, y, barWidth, height); // Draw the bar at calculated position
+      
+          ctx.fillStyle = "white";
+          ctx.fillText(originalHeight, x + barWidth / 2 - 10, y - 10); // Show the original value (from barData)
+        }
+      };
+      
+      
   
-      const barWidth = calculateBarWidth(); // Get dynamic bar width
-      const maxBarHeight = canvas.height - 50; // To prevent bars from exceeding canvas height
-  
-      // Loop through the bar data and draw the bars
-      for (let i = 0; i < barData.length; i++) {
-        const x = i * barWidth; // X position for each bar, no spacing
-        const y = canvas.height - barData[i]; // Y position is calculated inversely from the bottom
-        const height = barData[i]; // Bar height is based on the data
-  
-        ctx.fillStyle = "skyblue";
-        ctx.fillRect(x, y, barWidth, height); // Draw the bar at calculated position
-  
-        ctx.fillStyle = "black";
-        ctx.fillText(barData[i], x + barWidth / 2 - 10, y - 10); // Show the bar's value above it
-      }
-    };
-  
-    // Initial draw
+    // Initial scale and draw
     drawBars();
   
     // Handle the click event on the canvas
     canvas.addEventListener("click", (event) => {
-      // Get mouse position relative to canvas
       const mouseX = event.offsetX;
       const mouseY = event.offsetY;
   
-      // Dynamically update canvas size on every click (to be accurate)
-      updateCanvasSize();
+      updateCanvasSize(); // Dynamically update canvas size on click
   
-      // Calculate new dynamic bar width
-      const barWidth = calculateBarWidth();
+      const barWidth = calculateBarWidth(); // Get the updated bar width
   
-      // Check if clicked within the bar section (ignore clicks on empty spaces)
       for (let i = 0; i < barData.length; i++) {
         const x = i * barWidth;
   
-        // If the click was within the x-range of the bar
         if (mouseX >= x && mouseX <= x + barWidth) {
-          // Snap bar's y position based on mouse y click (invert the mouse y to match canvas coords)
-          const newHeight = Math.max(0, canvas.height - mouseY); // Prevent bar height from becoming negative
-  
-          // Update the bar data (new y = max height - clicked position)
-          barData[i] = newHeight;
-  
-          // Redraw the canvas with updated data
-          drawBars();
-          break; // Exit loop once the corresponding bar is found and updated
+            const pixelHeight = Math.max(0, canvas.height - mouseY);
+            // Turn to value in bar graph
+            const newHeight = (pixelHeight / canvas.height) * MAX_BAR_HEIGHT;
+            // Snap the new height to the nearest multiple of SNAP_VALUE
+            const snappedHeight = Math.round(newHeight / SNAP_VALUE) * SNAP_VALUE;
+            
+            barData[i] = snappedHeight; // Update the bar data with the snapped value
+    
+            drawBars(); // Redraw the bars with the updated data
+            break;
         }
       }
     });
