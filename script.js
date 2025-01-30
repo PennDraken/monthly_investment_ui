@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // let barData = [0, 10000, 0, 5000, 6000]; // Heights of bars
     let barData = new Array(50).fill(1000);
     // Maximum possible height for a bar
-    const MAX_BAR_HEIGHT = 20000;
+    const MAX_BAR_HEIGHT = 15000;
 
     // Define the snap value (this can be easily adjusted in one place now)
     const SNAP_VALUE = 1000; // Snap to the closest multiple of 1000
@@ -88,20 +88,45 @@ document.addEventListener("DOMContentLoaded", () => {
         const tempMaxValue = Math.max(MAX_BAR_HEIGHT, maxValue + 5000)
         const gap = 20
 
+        // Draw horisontal ticks
+        for (let i = 0; i < tempMaxValue; i += 5000) {
+            const y = canvas.height - Math.min(maxBarHeight, (i / tempMaxValue) * canvas.height);
+        
+            ctx.beginPath();        // Start a new path
+            ctx.moveTo(0, y);       // Move to the starting point (left edge, at height y)
+            ctx.lineTo(canvas.width, y);   // Draw to the right edge (same y-coordinate)
+            ctx.strokeStyle = "gray";  // Set the line color
+            ctx.lineWidth = 2;      // Set line width (optional)
+            ctx.stroke();           // Render the line
+        }
+        
         // Loop through the bar data and draw the bars
         for (let i = 0; i < years; i++) {
             const x = i * barWidth; // X position for each bar, no spacing
             const originalHeight = barData[i]; // Original height based on barData
 
-            const height = Math.min(maxBarHeight, (originalHeight / tempMaxValue) * canvas.height);
-            const y = canvas.height - height; // Y position is calculated inversely from the bottom
+            const barHeight = Math.min(maxBarHeight, (originalHeight / tempMaxValue) * canvas.height);
+            const y = canvas.height - barHeight; // Y position is calculated inversely from the bottom
 
             ctx.fillStyle = "skyblue";
-            ctx.fillRect(x + gap/2, y, barWidth - gap, height); // Draw the bar at calculated position
+            ctx.fillRect(x + gap/2, y, barWidth - gap, barHeight); // Draw the bar at calculated position
 
             ctx.fillStyle = "white";
-            ctx.fillText(originalHeight, x + barWidth / 2 - 10, y - 10); // Show the original value (from barData)
+            ctx.font = "12px Arial";  // Set the font size to 20px (you can adjust this value)
+            ctx.textAlign = "center";
+            ctx.fillText(formatNumberWithSpaces(originalHeight), x + barWidth / 2 , y - 10); // Show the original value (from barData)
         }
+
+        // Draw text
+        for (let i = 5000; i < tempMaxValue; i += 5000) {
+            const y = canvas.height - Math.min(maxBarHeight, (i / tempMaxValue) * canvas.height);
+        
+            ctx.font = "20px Arial";  // Set the font size to 20px (you can adjust this value)
+            ctx.textAlign = "left";   // Align text to the left
+            ctx.fillStyle = "white";
+            ctx.fillText(formatNumberWithSpaces(i), 10, y);    
+        }
+        
     };
 
     // Initial scale and draw
@@ -194,19 +219,44 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Function to draw the capital history on the result canvas
     function drawGraph(capitalHistory) {
-        const width = resultCanvas.width;
-        const height = resultCanvas.height;
+        resultCanvas.width  = resultCanvas.offsetWidth;
+        resultCanvas.height = resultCanvas.offsetHeight;
+
         const maxCapital = Math.max(...capitalHistory); // Maximum value of capital to scale bars
 
-        resultContext.clearRect(0, 0, width, height); // Clear canvas
-            
+        resultContext.clearRect(0, 0, resultCanvas.width, resultCanvas.height); // Clear canvas
+        
+        // Draw horisontal ticks
+        for (let i = 0; i < maxCapital; i += 250000) {
+            const y = resultCanvas.height - (i / maxCapital) * resultCanvas.height;
+        
+            resultContext.beginPath();        // Start a new path
+            resultContext.moveTo(0, y);       // Move to the starting point (left edge, at height y)
+            resultContext.lineTo(resultCanvas.width, y);   // Draw to the right edge (same y-coordinate)
+            resultContext.strokeStyle = "gray";  // Set the line color
+            resultContext.lineWidth = 2;      // Set line width (optional)
+            resultContext.stroke();           // Render the line
+        }
+        
+
         // Loop through and plot each point
         for (let i = 0; i < capitalHistory.length; i++) {
-            const x = (i / capitalHistory.length) * width;
-            const y = height - (capitalHistory[i] / maxCapital) * height;  // Inverse so that higher values go up
+            const x = (i / capitalHistory.length) * resultCanvas.width;
+            const y = resultCanvas.height - (capitalHistory[i] / maxCapital) * resultCanvas.height;  // Inverse so that higher values go up
 
             resultContext.fillStyle = "skyblue";
-            resultContext.fillRect(x, y, width / capitalHistory.length, height - y); // Draw the bars representing capital over time
+            resultContext.fillRect(x, y, resultCanvas.width / capitalHistory.length, resultCanvas.height - y); // Draw the bars representing capital over time
+        }
+
+        // Draw text
+        for (let i = 0; i < maxCapital; i += 250000) {
+            const y = resultCanvas.height - (i / maxCapital) * resultCanvas.height;
+
+            if (i > Math.min(...capitalHistory)) {
+                resultContext.font = "20px Arial";  // Set the font size to 20px (you can adjust this value)
+                resultContext.fillStyle = "white";
+                resultContext.fillText(formatNumberWithSpaces(i), 0, y);    
+            }
         }
     }
     // Initially update the results when the page loads
