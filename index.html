@@ -17,14 +17,14 @@
       <!-- Left Panel: Input Controls -->
       <section id="input-section" class="left-panel">
         <div class="input-group">
-          <label for="lumpsum">Lumpsum</label>
+          <label for="lumpsum">Initial Investment</label>
           <input type="number" id="lumpsum" value="100000" step="10000" />
           <span class="unit">kr</span>
-          <input type="range" id="lumpsum-slider" min="0" max="1000000" step="10000" value="740000" />
+          <input type="range" id="lumpsum-slider" min="0" max="1000000" step="10000" value="100000" />
         </div>
 
         <div class="input-group">
-          <label for="interest-rate">Interest Rate</label>
+          <label for="interest-rate">Return Rate</label>
           <input type="number" id="interest-rate" value="7" step="1" />
           <span class="unit">%</span>
           <input type="range" id="interest-rate-slider" min="0" max="20" step="1" value="7" />
@@ -32,14 +32,14 @@
 
         <div class="input-group">
           <label for="years">Years</label>
-          <input type="number" id="years" value="10" step="1" />
+          <input type="number" id="years" value="6" step="1" />
           <span class="unit">years</span>
-          <input type="range" id="years-slider" min="1" max="50" step="1" value="10" />
+          <input type="range" id="years-slider" min="1" max="50" step="1" value="6" />
         </div>
 
         <!-- Monthly savings/year Frame (Added Below Years Input) -->
         <div class="input-group">
-          <label for="monthly-savings-frame">Monthly savings/year</label>
+          <label for="monthly-savings-frame">Monthly Savings (kr) For Each Year</label>
           <div id="empty-frame" class="empty-frame">
             <canvas id="barChartCanvas"></canvas>
           </div>          

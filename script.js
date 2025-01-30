@@ -227,7 +227,17 @@ document.addEventListener("DOMContentLoaded", () => {
         resultContext.clearRect(0, 0, resultCanvas.width, resultCanvas.height); // Clear canvas
         
         // Draw horisontal ticks
-        for (let i = 0; i < maxCapital; i += 250000) {
+        let tickIncrement = 250000;
+        if (maxCapital < 100000) {
+            tickIncrement = 25000;
+        }
+        else if (maxCapital < 250000) {
+            tickIncrement = 50000;
+        }
+        else if (maxCapital < 500000) {
+            tickIncrement = 100000;
+        }
+        for (let i = 0; i < maxCapital; i += tickIncrement) {
             const y = resultCanvas.height - (i / maxCapital) * resultCanvas.height;
         
             resultContext.beginPath();        // Start a new path
@@ -249,14 +259,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Draw text
-        for (let i = 0; i < maxCapital; i += 250000) {
+        for (let i = 0; i < maxCapital; i += tickIncrement) {
             const y = resultCanvas.height - (i / maxCapital) * resultCanvas.height;
 
-            if (i > Math.min(...capitalHistory)) {
+            // if (i + 50000 > Math.min(...capitalHistory)) {
                 resultContext.font = "20px Arial";  // Set the font size to 20px (you can adjust this value)
                 resultContext.fillStyle = "white";
                 resultContext.fillText(formatNumberWithSpaces(i), 0, y);    
-            }
+            // }
         }
 
 
