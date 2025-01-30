@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Sample data for bars (initial values that will be adjusted to the range of 0 to 30,000)
     // let barData = [0, 10000, 0, 5000, 6000]; // Heights of bars
-    let barData = new Array(50).fill(1000);
+    let barData = new Array(50).fill(0);
     // Maximum possible height for a bar
     const MAX_BAR_HEIGHT = 15000;
 
