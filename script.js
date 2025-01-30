@@ -246,17 +246,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
             resultContext.fillStyle = "skyblue";
             resultContext.fillRect(x, y, resultCanvas.width / capitalHistory.length + 1, resultCanvas.height - y); // Draw the bars representing capital over time
-            
-            if (i % 12 == 0) {
-                resultContext.beginPath();        // Start a new path
-                resultContext.moveTo(x, 0);       // Move to the starting point (left edge, at height y)
-                resultContext.lineTo(x, resultCanvas.height);   // Draw to the right edge (same y-coordinate)
-                resultContext.strokeStyle = "gray";  // Set the line color
-                resultContext.lineWidth = 2;      // Set line width (optional)
-                resultContext.stroke();           // Render the line
-    
-            }
-
         }
 
         // Draw text
@@ -270,17 +259,38 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        // Draw vertical ticks
-        for (let i = 0; i < maxCapital.length; i += 12) {
-            const x = i * (resultCanvas.width / maxCapital.length);
-        
-            resultContext.beginPath();        // Start a new path
-            resultContext.moveTo(x, 0);       // Move to the starting point (left edge, at height y)
-            resultContext.lineTo(x, resultCanvas.height);   // Draw to the right edge (same y-coordinate)
-            resultContext.strokeStyle = "gray";  // Set the line color
-            resultContext.lineWidth = 2;      // Set line width (optional)
-            resultContext.stroke();           // Render the line
+
+        for (let i = 0; i < capitalHistory.length; i++) {
+            const x = (i / capitalHistory.length) * resultCanvas.width;
+            const y = resultCanvas.height - (capitalHistory[i] / maxCapital) * resultCanvas.height;  // Inverse so that higher values go up
+
+            if (i % 24 == 0) {
+                resultContext.beginPath();        // Start a new path
+                resultContext.moveTo(x, 0);       // Move to the starting point (left edge, at height y)
+                resultContext.lineTo(x, resultCanvas.height);   // Draw to the right edge (same y-coordinate)
+                resultContext.strokeStyle = "gray";  // Set the line color
+                resultContext.lineWidth = 2;      // Set line width (optional)
+                resultContext.stroke();           // Render the line
+                
+                resultContext.font = "20px Arial";  // Set the font size to 20px (you can adjust this value)
+                resultContext.fillStyle = "white";
+                resultContext.textAlign = "center"
+                resultContext.fillText(Math.round(i/12), x, resultCanvas.height);    
+
+            }
+
         }
+        // // Draw vertical ticks TODO fix not working currently
+        // for (let i = 0; i < maxCapital.length; i += 12) {
+        //     const x = i * (i / capitalHistory.length) * resultCanvas.width;
+        // 
+        //     resultContext.beginPath();        // Start a new path
+        //     resultContext.moveTo(x, 0);       // Move to the starting point (left edge, at height y)
+        //     resultContext.lineTo(x, resultCanvas.height);   // Draw to the right edge (same y-coordinate)
+        //     resultContext.strokeStyle = "gray";  // Set the line color
+        //     resultContext.lineWidth = 2;      // Set line width (optional)
+        //     resultContext.stroke();           // Render the line
+        // }
     }
     // Initially update the results when the page loads
     updateResults();
