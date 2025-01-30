@@ -222,11 +222,13 @@ document.addEventListener("DOMContentLoaded", () => {
         resultCanvas.width  = resultCanvas.offsetWidth;
         resultCanvas.height = resultCanvas.offsetHeight;
 
-        const maxCapital = Math.max(...capitalHistory); // Maximum value of capital to scale bars
+        const maxCapital = 1.1*Math.max(...capitalHistory); // Maximum value of capital to scale bars
 
         resultContext.clearRect(0, 0, resultCanvas.width, resultCanvas.height); // Clear canvas
         
         // Draw horisontal ticks
+        const startX = 90;
+        const startY = 30;
         let tickIncrement = 250000;
         if (maxCapital < 100000) {
             tickIncrement = 25000;
@@ -237,11 +239,11 @@ document.addEventListener("DOMContentLoaded", () => {
         else if (maxCapital < 500000) {
             tickIncrement = 100000;
         }
-        for (let i = 0; i < maxCapital; i += tickIncrement) {
-            const y = resultCanvas.height - (i / maxCapital) * resultCanvas.height;
+        for (let i = tickIncrement; i < maxCapital; i += tickIncrement) {
+            const y = resultCanvas.height - (i / maxCapital) * (resultCanvas.height - startY) - startY;
         
             resultContext.beginPath();        // Start a new path
-            resultContext.moveTo(0, y);       // Move to the starting point (left edge, at height y)
+            resultContext.moveTo(startX, y);       // Move to the starting point (left edge, at height y)
             resultContext.lineTo(resultCanvas.width, y);   // Draw to the right edge (same y-coordinate)
             resultContext.strokeStyle = "gray";  // Set the line color
             resultContext.lineWidth = 2;      // Set line width (optional)
@@ -251,15 +253,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Loop through and plot each point
         for (let i = 0; i < capitalHistory.length; i++) {
-            const x = (i / capitalHistory.length) * resultCanvas.width;
-            const y = resultCanvas.height - (capitalHistory[i] / maxCapital) * resultCanvas.height;  // Inverse so that higher values go up
+            const x = (i / capitalHistory.length) * (resultCanvas.width - startX) + startX;
+            const y = resultCanvas.height - (capitalHistory[i] / maxCapital) * (resultCanvas.height - startY) - startY;  // Inverse so that higher values go up
 
             resultContext.fillStyle = "skyblue";
-            resultContext.fillRect(x, y, resultCanvas.width / capitalHistory.length + 1, resultCanvas.height - y); // Draw the bars representing capital over time
+            resultContext.fillRect(x, y, (resultCanvas.width - startX) / capitalHistory.length + 1, resultCanvas.height - y - startY); // Draw the bars representing capital over time
         }
 
         // Draw text
-        for (let i = 0; i < maxCapital; i += tickIncrement) {
+        for (let i = tickIncrement; i < maxCapital; i += tickIncrement) {
             const y = resultCanvas.height - (i / maxCapital) * resultCanvas.height;
 
             // if (i + 50000 > Math.min(...capitalHistory)) {
@@ -270,11 +272,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
 
+        // Plot vertical ticks
         for (let i = 0; i < capitalHistory.length; i++) {
-            const x = (i / capitalHistory.length) * resultCanvas.width;
+            const x = (i / capitalHistory.length) * (resultCanvas.width - startX) + startX;
             const y = resultCanvas.height - (capitalHistory[i] / maxCapital) * resultCanvas.height;  // Inverse so that higher values go up
 
-            if (i % 24 == 1 && i != 1) {
+            if (i % 24 == 0) {
                 resultContext.beginPath();        // Start a new path
                 resultContext.moveTo(x, 0);       // Move to the starting point (left edge, at height y)
                 resultContext.lineTo(x, resultCanvas.height);   // Draw to the right edge (same y-coordinate)
