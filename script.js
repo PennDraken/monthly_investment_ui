@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // let barData = [0, 10000, 0, 5000, 6000]; // Heights of bars
     let barData = new Array(50).fill(1000);
     // Maximum possible height for a bar
-    const MAX_BAR_HEIGHT = 20000; // This corresponds to 30,000 in scale.
+    const MAX_BAR_HEIGHT = 20000;
 
     // Define the snap value (this can be easily adjusted in one place now)
     const SNAP_VALUE = 1000; // Snap to the closest multiple of 1000
@@ -86,7 +86,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const years = parseInt(yearsInput.value);
         const maxValue = Math.max(...barData);
         const tempMaxValue = Math.max(MAX_BAR_HEIGHT, maxValue + 5000)
-// 
+        const gap = 20
+
         // Loop through the bar data and draw the bars
         for (let i = 0; i < years; i++) {
             const x = i * barWidth; // X position for each bar, no spacing
@@ -96,7 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const y = canvas.height - height; // Y position is calculated inversely from the bottom
 
             ctx.fillStyle = "skyblue";
-            ctx.fillRect(x, y, barWidth, height); // Draw the bar at calculated position
+            ctx.fillRect(x + gap/2, y, barWidth - gap, height); // Draw the bar at calculated position
 
             ctx.fillStyle = "white";
             ctx.fillText(originalHeight, x + barWidth / 2 - 10, y - 10); // Show the original value (from barData)
@@ -198,7 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const maxCapital = Math.max(...capitalHistory); // Maximum value of capital to scale bars
 
         resultContext.clearRect(0, 0, width, height); // Clear canvas
-
+            
         // Loop through and plot each point
         for (let i = 0; i < capitalHistory.length; i++) {
             const x = (i / capitalHistory.length) * width;
