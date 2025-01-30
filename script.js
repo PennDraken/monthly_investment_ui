@@ -245,7 +245,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const y = resultCanvas.height - (capitalHistory[i] / maxCapital) * resultCanvas.height;  // Inverse so that higher values go up
 
             resultContext.fillStyle = "skyblue";
-            resultContext.fillRect(x, y, resultCanvas.width / capitalHistory.length, resultCanvas.height - y); // Draw the bars representing capital over time
+            resultContext.fillRect(x, y, resultCanvas.width / capitalHistory.length + 1, resultCanvas.height - y); // Draw the bars representing capital over time
         }
 
         // Draw text
