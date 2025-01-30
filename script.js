@@ -267,7 +267,8 @@ document.addEventListener("DOMContentLoaded", () => {
             // if (i + 50000 > Math.min(...capitalHistory)) {
                 resultContext.font = "20px Arial";  // Set the font size to 20px (you can adjust this value)
                 resultContext.fillStyle = "white";
-                resultContext.fillText(formatNumberWithSpaces(i), 0, y);    
+                resultContext.textAlign = "center"
+                resultContext.fillText(formatNumberWithSpaces(i), startX/2, y);    
             // }
         }
 
