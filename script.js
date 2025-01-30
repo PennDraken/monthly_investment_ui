@@ -264,7 +264,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const x = (i / capitalHistory.length) * resultCanvas.width;
             const y = resultCanvas.height - (capitalHistory[i] / maxCapital) * resultCanvas.height;  // Inverse so that higher values go up
 
-            if (i % 24 == 0) {
+            if (i % 24 == 1 && i != 1) {
                 resultContext.beginPath();        // Start a new path
                 resultContext.moveTo(x, 0);       // Move to the starting point (left edge, at height y)
                 resultContext.lineTo(x, resultCanvas.height);   // Draw to the right edge (same y-coordinate)
