@@ -31,15 +31,23 @@
         </div>
 
         <div class="input-group">
-          <label for="years">Years</label>
+          <label for="years">Years/ Months</label>
+          <label class="switch" >
+            <input type="checkbox" id="monthlyAnnualToggle">
+            <span class="slider" >
+              <span class="label left">Annual</span>
+              <span class="label right">Monthly</span>
+            </span>
+          </label>
           <input type="number" id="years" value="6" step="1" />
-          <span class="unit">years</span>
+          <span class="unit" id="yearsUnitLabel">years</span>
           <input type="range" id="years-slider" min="1" max="25" step="1" value="6" />
         </div>
 
         <!-- Monthly savings/year Frame (Added Below Years Input) -->
         <div class="input-group">
-          <label for="monthly-savings-frame">Monthly Savings (kr) For Each Year</label>
+          <label for="monthly-savings-frame">Savings Over Time</label>
+                    
           <div id="empty-frame" class="empty-frame">
             <canvas id="barChartCanvas"></canvas>
           </div>          
@@ -57,7 +65,7 @@
 
         <!-- Added Label with Text Below the Result Diagram -->
         <div id="final-value-section" class="final-value-section">
-          <label for="final-value">Final value after <span id="year-label">x</span> years</label>
+          <label for="final-value">Final value after <span id="year-label">x</span> years (<span id="months-label">y</span> months)</label>
           <div id="final-value-text" class="final-value-text">
             <strong id="final-value-number">--</strong> kr
           </div>

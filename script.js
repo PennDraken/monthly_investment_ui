@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function formatNumberWithSpaces(number) {
         return new Intl.NumberFormat('sv-SE').format(number); // 'sv-SE' for Swedish locale (spaces as thousand separators)
     }
-    
+
     // Get references to all input elements
     const lumpsumInput = document.getElementById('lumpsum');
     const lumpsumSlider = document.getElementById('lumpsum-slider');
@@ -15,6 +15,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const resultContext = resultCanvas.getContext("2d");
     const finalValueText = document.getElementById('final-value-number');
     const yearLabel = document.getElementById('year-label');
+    const monthLabel = document.getElementById('months-label');
+    const monthlyAnnualToggle = document.getElementById('monthlyAnnualToggle');
+    const yearsUnitLabel = document.getElementById('yearsUnitLabel');
+
+    let monthlySavingsViewBoolean = true; // Controls wether user can input more detailed savings data
 
     // Function to update values when slider changes
     // Set up event listeners for the sliders and inputs
@@ -48,12 +53,26 @@ document.addEventListener("DOMContentLoaded", () => {
         updateResults();
     });
 
+    monthlyAnnualToggle.addEventListener('change', function () {
+        if (monthlyAnnualToggle.checked) {
+            monthlySavingsViewBoolean = false;
+            yearsUnitLabel.textContent = "months";
+
+        } else {
+            monthlySavingsViewBoolean = true;
+            yearsUnitLabel.textContent = "years";
+        }
+        console.log(`Pressed toggle! ${monthlySavingsViewBoolean}`);
+        drawBars();
+        updateResults();
+    });
+
     const canvas = document.getElementById("barChartCanvas");
     const ctx = canvas.getContext("2d");
 
     // Sample data for bars (initial values that will be adjusted to the range of 0 to 30,000)
     // let barData = [0, 10000, 0, 5000, 6000]; // Heights of bars
-    let barData = new Array(50).fill(0);
+    let barData = new Array(1000).fill(0);
     // Maximum possible height for a bar
     const MAX_BAR_HEIGHT = 15000;
 
@@ -67,31 +86,32 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // Calculate bar width dynamically based on the canvas size
-    const calculateBarWidth = () => {
-        updateCanvasSize();
-        const canvasWidth = canvas.width;
-        const years = parseInt(yearsInput.value);
-        const barCount = years;
-        const barWidth = canvasWidth / barCount;
+    const calculateBarWidth = (barCount) => {
+        updateCanvasSize();  // Ensure the canvas size is updated first
+        const canvasWidth = canvas.width;  // Get the current canvas width
+        const barWidth = canvasWidth / barCount;  // Calculate the width of each bar
         return barWidth;
     };
-
+    
     // Draw bars function
     const drawBars = () => {
         updateCanvasSize(); // Ensure canvas size is correct before rendering
         ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas before each redraw
 
-        const barWidth = calculateBarWidth(); // Get dynamic bar width
+        let years = parseInt(yearsInput.value);
+
+        const barWidth = calculateBarWidth(years); // Get dynamic bar width
         const maxBarHeight = canvas.height; // Max height constraint for bars
-        const years = parseInt(yearsInput.value);
+        console.log(years);
+        // const years = parseInt(yearsInput.value);
         const maxValue = Math.max(...barData);
         const tempMaxValue = Math.max(MAX_BAR_HEIGHT, maxValue + 5000)
-        const gap = 20
+        const gap = barWidth * 0.04
 
         // Draw horisontal ticks
         for (let i = 0; i < tempMaxValue; i += 5000) {
             const y = canvas.height - Math.min(maxBarHeight, (i / tempMaxValue) * canvas.height);
-        
+
             ctx.beginPath();        // Start a new path
             ctx.moveTo(0, y);       // Move to the starting point (left edge, at height y)
             ctx.lineTo(canvas.width, y);   // Draw to the right edge (same y-coordinate)
@@ -99,7 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ctx.lineWidth = 2;      // Set line width (optional)
             ctx.stroke();           // Render the line
         }
-        
+
         // Loop through the bar data and draw the bars
         for (let i = 0; i < years; i++) {
             const x = i * barWidth; // X position for each bar, no spacing
@@ -109,24 +129,23 @@ document.addEventListener("DOMContentLoaded", () => {
             const y = canvas.height - barHeight; // Y position is calculated inversely from the bottom
 
             ctx.fillStyle = "skyblue";
-            ctx.fillRect(x + gap/2, y, barWidth - gap, barHeight); // Draw the bar at calculated position
+            ctx.fillRect(x + gap / 2, y, barWidth - gap, barHeight); // Draw the bar at calculated position
 
             ctx.fillStyle = "white";
             ctx.font = "12px Arial";  // Set the font size to 20px (you can adjust this value)
             ctx.textAlign = "center";
-            ctx.fillText(formatNumberWithSpaces(originalHeight), x + barWidth / 2 , y - 10); // Show the original value (from barData)
+            ctx.fillText(formatNumberWithSpaces(originalHeight), x + barWidth / 2, y - 10); // Show the original value (from barData)
         }
 
         // Draw text
         for (let i = 5000; i < tempMaxValue; i += 5000) {
             const y = canvas.height - Math.min(maxBarHeight, (i / tempMaxValue) * canvas.height);
-        
+
             ctx.font = "20px Arial";  // Set the font size to 20px (you can adjust this value)
             ctx.textAlign = "left";   // Align text to the left
             ctx.fillStyle = "white";
-            ctx.fillText(formatNumberWithSpaces(i), 10, y);    
+            ctx.fillText(formatNumberWithSpaces(i), 10, y);
         }
-        
     };
 
     // Initial scale and draw
@@ -153,9 +172,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const mouseX = event.offsetX;
         const mouseY = event.offsetY;
 
+        
         updateCanvasSize(); // Dynamically update canvas size on click
 
-        const barWidth = calculateBarWidth(); // Get the updated bar width
+        let years = parseInt(yearsInput.value);
+        const barWidth = calculateBarWidth(years); // Get the updated bar width
         const maxValue = Math.max(...barData)
         const tempMaxValue = Math.max(MAX_BAR_HEIGHT, maxValue + 5000)
 
@@ -180,19 +201,31 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    function calculateMonthlyCapital(lumpsum, savingsList, rate) {
+    function calculateMonthlyCapital(lumpsum, savingsList, rate, monthlySavingsViewBoolean) {
         const rateFrac = 1 + rate;
         let capital = lumpsum;
         const capitalMonthlyHistory = [capital];
-
-        savingsList.forEach(monthlySavings => {
-            for (let i = 0; i < 12; i++) {
+        
+        if (monthlySavingsViewBoolean) {
+            // savingsList is for each year
+            savingsList.forEach(monthlySavings => {
+                for (let i = 0; i < 12; i++) {
+                    // Monthly compound
+                    capital += monthlySavings;
+                    capital = capital * Math.pow(rateFrac, 1 / 12);
+                    capitalMonthlyHistory.push(capital);
+                }
+            });
+        }
+        else {
+            // savingsList is based monthly
+            savingsList.forEach(monthlySavings => {
                 // Monthly compound
                 capital += monthlySavings;
                 capital = capital * Math.pow(rateFrac, 1 / 12);
                 capitalMonthlyHistory.push(capital);
-            }
-        });
+            });    
+        }
 
         return capitalMonthlyHistory;
     }
@@ -208,24 +241,30 @@ document.addEventListener("DOMContentLoaded", () => {
         const savingsList = barData.slice(0, years);
 
         // Get the calculated capital history
-        const capitalHistory = calculateMonthlyCapital(lumpsum, savingsList, interestRate);
+        const capitalHistory = calculateMonthlyCapital(lumpsum, savingsList, interestRate, monthlySavingsViewBoolean);
 
         // Draw the result graph
         drawGraph(capitalHistory);
 
         finalValueText.textContent = formatNumberWithSpaces(Math.max(...capitalHistory).toFixed(0));
-        yearLabel.textContent = years;
+        if (monthlySavingsViewBoolean) {
+            yearLabel.textContent = years;
+            monthLabel.textContent = years * 12;
+        } else {
+            yearLabel.textContent = Math.round(years/12);
+            monthLabel.textContent = years;
+        }
     }
 
     // Function to draw the capital history on the result canvas
     function drawGraph(capitalHistory) {
-        resultCanvas.width  = resultCanvas.offsetWidth;
+        resultCanvas.width = resultCanvas.offsetWidth;
         resultCanvas.height = resultCanvas.offsetHeight;
 
-        const maxCapital = 1.1*Math.max(...capitalHistory); // Maximum value of capital to scale bars
+        const maxCapital = 1.1 * Math.max(...capitalHistory); // Maximum value of capital to scale bars
 
         resultContext.clearRect(0, 0, resultCanvas.width, resultCanvas.height); // Clear canvas
-        
+
         // Draw horisontal ticks
         const startX = 90;
         const startY = 30;
@@ -241,7 +280,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         for (let i = tickIncrement; i < maxCapital; i += tickIncrement) {
             const y = resultCanvas.height - (i / maxCapital) * (resultCanvas.height - startY) - startY;
-        
+
             resultContext.beginPath();        // Start a new path
             resultContext.moveTo(startX, y);       // Move to the starting point (left edge, at height y)
             resultContext.lineTo(resultCanvas.width, y);   // Draw to the right edge (same y-coordinate)
@@ -249,7 +288,7 @@ document.addEventListener("DOMContentLoaded", () => {
             resultContext.lineWidth = 2;      // Set line width (optional)
             resultContext.stroke();           // Render the line
         }
-        
+
 
         // Loop through and plot each point
         for (let i = 0; i < capitalHistory.length; i++) {
@@ -265,10 +304,10 @@ document.addEventListener("DOMContentLoaded", () => {
             const y = resultCanvas.height - (i / maxCapital) * resultCanvas.height;
 
             // if (i + 50000 > Math.min(...capitalHistory)) {
-                resultContext.font = "20px Arial";  // Set the font size to 20px (you can adjust this value)
-                resultContext.fillStyle = "white";
-                resultContext.textAlign = "center"
-                resultContext.fillText(formatNumberWithSpaces(i), startX/2, y);    
+            resultContext.font = "20px Arial";  // Set the font size to 20px (you can adjust this value)
+            resultContext.fillStyle = "white";
+            resultContext.textAlign = "center"
+            resultContext.fillText(formatNumberWithSpaces(i), startX / 2, y);
             // }
         }
 
@@ -285,11 +324,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 resultContext.strokeStyle = "gray";  // Set the line color
                 resultContext.lineWidth = 2;      // Set line width (optional)
                 resultContext.stroke();           // Render the line
-                
+
                 resultContext.font = "20px Arial";  // Set the font size to 20px (you can adjust this value)
                 resultContext.fillStyle = "white";
                 resultContext.textAlign = "center"
-                resultContext.fillText(Math.round(i/12), x, resultCanvas.height);    
+                resultContext.fillText(Math.round(i / 12), x, resultCanvas.height);
 
             }
 
