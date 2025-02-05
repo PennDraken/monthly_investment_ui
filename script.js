@@ -168,6 +168,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    resultCanvas.addEventListener("mousedown", (event) => {
+        updateResults(event);
+    });
+
     function handleMouseEvent(event) {
         const mouseX = event.offsetX;
         const mouseY = event.offsetY;
@@ -230,7 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return capitalMonthlyHistory;
     }
 
-    function updateResults() {
+    function updateResults(event) {
         const lumpsum = parseFloat(lumpsumInput.value);
         const interestRate = parseFloat(interestRateInput.value) / 100;  // Convert percentage to decimal
         const years = parseInt(yearsInput.value);
@@ -241,10 +245,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const savingsList = barData.slice(0, years);
 
         // Get the calculated capital history
-        const capitalHistory = calculateMonthlyCapital(lumpsum, savingsList, interestRate, monthlySavingsViewBoolean);
+        const capitalHistory = calculateMonthlyCapital(lumpsum, savingsList, interestRate, monthlySavingsViewBoolean, event);
 
         // Draw the result graph
-        drawGraph(capitalHistory);
+        drawCapitalHistory(capitalHistory, event);
 
         finalValueText.textContent = formatNumberWithSpaces(Math.max(...capitalHistory).toFixed(0));
         if (monthlySavingsViewBoolean) {
@@ -257,7 +261,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Function to draw the capital history on the result canvas
-    function drawGraph(capitalHistory) {
+    function drawCapitalHistory(capitalHistory, event) {
         resultCanvas.width = resultCanvas.offsetWidth;
         resultCanvas.height = resultCanvas.offsetHeight;
 
@@ -317,7 +321,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const x = (i / capitalHistory.length) * (resultCanvas.width - startX) + startX;
             const y = resultCanvas.height - (capitalHistory[i] / maxCapital) * resultCanvas.height;  // Inverse so that higher values go up
 
-            if (i % 24 == 0) {
+            if (i % 12 == 0) {
                 resultContext.beginPath();        // Start a new path
                 resultContext.moveTo(x, 0);       // Move to the starting point (left edge, at height y)
                 resultContext.lineTo(x, resultCanvas.height);   // Draw to the right edge (same y-coordinate)
@@ -331,20 +335,51 @@ document.addEventListener("DOMContentLoaded", () => {
                 resultContext.fillText(Math.round(i / 12), x, resultCanvas.height);
 
             }
-
         }
-        // // Draw vertical ticks TODO fix not working currently
-        // for (let i = 0; i < maxCapital.length; i += 12) {
-        //     const x = i * (i / capitalHistory.length) * resultCanvas.width;
-        // 
-        //     resultContext.beginPath();        // Start a new path
-        //     resultContext.moveTo(x, 0);       // Move to the starting point (left edge, at height y)
-        //     resultContext.lineTo(x, resultCanvas.height);   // Draw to the right edge (same y-coordinate)
-        //     resultContext.strokeStyle = "gray";  // Set the line color
-        //     resultContext.lineWidth = 2;      // Set line width (optional)
-        //     resultContext.stroke();           // Render the line
-        // }
+
+        // Plot mouse hover
+        if (event) {
+            let mouseX = event.offsetX;
+            let mouseY = event.offsetY;
+            let barWidth = (resultCanvas.width - startX) / capitalHistory.length + 1
+
+            // Iterate through all bars to find correspond bar
+            for (let i = 0; i < capitalHistory.length; i++) {
+                const x = (i / capitalHistory.length) * (resultCanvas.width - startX) + startX;
+                const y = resultCanvas.height - (capitalHistory[i] / maxCapital) * (resultCanvas.height - startY) - startY;  // Inverse so that higher values go up
+    
+                if (mouseX > x && mouseX < x + barWidth) {
+                    // Draw selected bar
+                    let gradient = resultContext.createLinearGradient(x, y, x, resultCanvas.height - startY);
+                    gradient.addColorStop(0, "rgba(255, 255, 255, 1)");  // Fully opaque white at the top
+                    gradient.addColorStop(1, "rgba(255, 255, 255, 0)");  // Fully transparent at the bottom
+                
+                    // Apply gradient
+                    resultContext.fillStyle = gradient;
+                    resultContext.fillRect(x, y, barWidth, resultCanvas.height - y - startY);                
+                    // Draw date
+                    resultContext.font = "bold 20px Arial";  // Set the font size to 20px (you can adjust this value)
+                    resultContext.fillStyle = "white";
+                    resultContext.textAlign = "center"
+                    resultContext.fillText(Math.floor(i / 12) + ' years ' + i % 12 + ' months', x + barWidth/2, resultCanvas.height - startY - 20);
+
+                    // Draw money amount
+                    resultContext.font = "bold 36px Arial";  // Set the font size to 20px (you can adjust this value)
+                    resultContext.fillStyle = "white";
+                    resultContext.textAlign = "center"
+                    resultContext.fillText(formatNumberWithSpaces(Math.round(capitalHistory[i])) + ' kr', x, y);
+                    break;
+
+                }
+            }
+        }
     }
+
+
+    function capitalHistoryClick() {
+
+    }
+
     // Initially update the results when the page loads
     updateResults();
 
