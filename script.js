@@ -4,6 +4,11 @@ document.addEventListener("DOMContentLoaded", () => {
         return new Intl.NumberFormat('sv-SE').format(number); // 'sv-SE' for Swedish locale (spaces as thousand separators)
     }
 
+    function convertTextToNumber(text) {
+        // Remove spaces and parse the resulting string as an integer
+        return parseFloat(text.replace(/\s+/g, ''), 10);
+    }
+
     // Get references to all input elements
     const lumpsumInput = document.getElementById('lumpsum');
     const lumpsumSlider = document.getElementById('lumpsum-slider');
@@ -32,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Function to update values when slider changes
     // Set up event listeners for the sliders and inputs
     lumpsumSlider.addEventListener('input', () => {
-        lumpsumInput.value = lumpsumSlider.value;
+        lumpsumInput.value = formatNumberWithSpaces(lumpsumSlider.value);
         updateResults();
     });
 
@@ -46,27 +51,27 @@ document.addEventListener("DOMContentLoaded", () => {
         updateResults();
     });
     monthlySavingsSlider.addEventListener('input', () => {
-        monthlySavingsInput.value = monthlySavingsSlider.value;
+        monthlySavingsInput.value = formatNumberWithSpaces(monthlySavingsSlider.value);
         drawBars();
         updateResults();
     });
 
     // Function to update values when text input changes
     lumpsumInput.addEventListener('input', () => {
-        lumpsumSlider.value = lumpsumInput.value;
+        lumpsumSlider.value = convertTextToNumber(lumpsumInput.value);
         updateResults();
     });
     interestRateInput.addEventListener('input', () => {
-        interestRateSlider.value = interestRateInput.value;
+        interestRateSlider.value = convertTextToNumber(interestRateInput.value);
         updateResults();
     });
     yearsInput.addEventListener('input', () => {
-        yearsSlider.value = yearsInput.value;
+        yearsSlider.value = convertTextToNumber(yearsInput.value);
         drawBars();
         updateResults();
     });
     monthlySavingsInput.addEventListener('input', () => {
-        monthlySavingsSlider.value = monthlySavingsInput.value;
+        monthlySavingsSlider.value = convertTextToNumber(monthlySavingsInput.value);
         drawBars();
         updateResults();
     });
@@ -209,7 +214,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
         updateCanvasSize(); // Dynamically update canvas size on click
 
-        let years = parseInt(yearsInput.value);
+        let years = parseInt(convertTextToNumber(yearsInput.value));
         const barWidth = calculateBarWidth(years); // Get the updated bar width
         const maxValue = Math.max(...barData)
         const tempMaxValue = Math.max(MAX_BAR_HEIGHT, maxValue + 5000)
@@ -265,7 +270,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function updateResults(event) {
-        const lumpsum = parseFloat(lumpsumInput.value);
+        const lumpsum = parseFloat(convertTextToNumber(lumpsumInput.value));
         const interestRate = parseFloat(interestRateInput.value) / 100;  // Converts rate as int. percentage to decimal
         const years = parseInt(yearsInput.value);
 
@@ -273,7 +278,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // const savingsList = new Array(years).fill(1000); // Each year deposits 1000
         let savingsList;
         if (fixedViewBoolean) {
-            savingsList = new Array(years).fill(parseFloat(monthlySavingsInput.value));
+            savingsList = new Array(years).fill(parseFloat(monthlySavingsSlider.value));
         } else {
             savingsList = barData.slice(0, years);
         }
