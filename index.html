@@ -31,7 +31,7 @@
         </div>
 
         <div class="input-group">
-          <label for="years">Years/ Months</label>
+          <label for="years">Time Period</label>
           <label class="switch" >
             <input type="checkbox" id="monthlyAnnualToggle">
             <span class="slider" >
@@ -47,10 +47,26 @@
         <!-- Monthly savings/year Frame (Added Below Years Input) -->
         <div class="input-group">
           <label for="monthly-savings-frame">Savings Over Time</label>
-                    
-          <div id="empty-frame" class="empty-frame">
-            <canvas id="barChartCanvas"></canvas>
-          </div>          
+          <label class="switch" >
+            <input type="checkbox" id="fixedChangingToggle">
+            <span class="slider" >
+              <span class="label left">Fixed</span>
+              <span class="label right">Changing</span>
+            </span>
+          </label>
+
+          <div class="input-group" id="fixedMonthlySavingsGroup">
+            <label for="monthlySavings"></label>
+            <input type="number" id="monthlySavings" value="1000" step="10000" />
+            <span class="unit">kr</span>
+            <input type="range" id="monthlySavings-slider" min="0" max="50000" step="1000" value="1000" />
+          </div>
+          <div id="changingMonthlySavingsGroup">
+            <label for=""></label>
+            <div id="empty-frame" class="empty-frame">
+              <canvas id="barChartCanvas"></canvas>
+            </div>
+          </div>
         </div>
       </section>
 

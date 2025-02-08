@@ -11,15 +11,23 @@ document.addEventListener("DOMContentLoaded", () => {
     const interestRateSlider = document.getElementById('interest-rate-slider');
     const yearsInput = document.getElementById('years');
     const yearsSlider = document.getElementById('years-slider');
+    const monthlySavingsInput = document.getElementById('monthlySavings');
+    const monthlySavingsSlider = document.getElementById('monthlySavings-slider');
+
     const resultCanvas = document.getElementById('resultCanvas');
     const resultContext = resultCanvas.getContext("2d");
     const finalValueText = document.getElementById('final-value-number');
     const yearLabel = document.getElementById('year-label');
     const monthLabel = document.getElementById('months-label');
     const monthlyAnnualToggle = document.getElementById('monthlyAnnualToggle');
+    const fixedChangingToggle = document.getElementById('fixedChangingToggle');
     const yearsUnitLabel = document.getElementById('yearsUnitLabel');
+    const fixedMonthlySavingsGroup = document.getElementById('fixedMonthlySavingsGroup');
+    const changingMonthlySavingsGroup = document.getElementById('changingMonthlySavingsGroup');
 
     let monthlySavingsViewBoolean = true; // Controls wether user can input more detailed savings data
+    let fixedViewBoolean = true; // Controls wether the input for monthly savings should be fixed or variable
+    changingMonthlySavingsGroup.style.display = "none"; // Hide barGraph input (syncs with fixedViewBoolean)
 
     // Function to update values when slider changes
     // Set up event listeners for the sliders and inputs
@@ -34,6 +42,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     yearsSlider.addEventListener('input', () => {
         yearsInput.value = yearsSlider.value;
+        drawBars();
+        updateResults();
+    });
+    monthlySavingsSlider.addEventListener('input', () => {
+        monthlySavingsInput.value = monthlySavingsSlider.value;
         drawBars();
         updateResults();
     });
@@ -52,6 +65,11 @@ document.addEventListener("DOMContentLoaded", () => {
         drawBars();
         updateResults();
     });
+    monthlySavingsInput.addEventListener('input', () => {
+        monthlySavingsSlider.value = monthlySavingsInput.value;
+        drawBars();
+        updateResults();
+    });
 
     monthlyAnnualToggle.addEventListener('change', function () {
         if (monthlyAnnualToggle.checked) {
@@ -63,6 +81,19 @@ document.addEventListener("DOMContentLoaded", () => {
             yearsUnitLabel.textContent = "years";
         }
         console.log(`Pressed toggle! ${monthlySavingsViewBoolean}`);
+        drawBars();
+        updateResults();
+    });
+
+    fixedChangingToggle.addEventListener('change', function () {
+        fixedViewBoolean = !fixedViewBoolean
+        if (fixedViewBoolean) {
+            changingMonthlySavingsGroup.style.display = "none";
+            fixedMonthlySavingsGroup.style.display = "block";
+        } else {
+            changingMonthlySavingsGroup.style.display = "block"
+            fixedMonthlySavingsGroup.style.display = "none";
+        }
         drawBars();
         updateResults();
     });
@@ -175,7 +206,6 @@ document.addEventListener("DOMContentLoaded", () => {
     function handleMouseEvent(event) {
         const mouseX = event.offsetX;
         const mouseY = event.offsetY;
-
         
         updateCanvasSize(); // Dynamically update canvas size on click
 
@@ -236,13 +266,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function updateResults(event) {
         const lumpsum = parseFloat(lumpsumInput.value);
-        const interestRate = parseFloat(interestRateInput.value) / 100;  // Convert percentage to decimal
+        const interestRate = parseFloat(interestRateInput.value) / 100;  // Converts rate as int. percentage to decimal
         const years = parseInt(yearsInput.value);
 
         // Example savings list for each year
         // const savingsList = new Array(years).fill(1000); // Each year deposits 1000
-
-        const savingsList = barData.slice(0, years);
+        let savingsList;
+        if (fixedViewBoolean) {
+            savingsList = new Array(years).fill(parseFloat(monthlySavingsInput.value));
+        } else {
+            savingsList = barData.slice(0, years);
+        }
 
         // Get the calculated capital history
         const capitalHistory = calculateMonthlyCapital(lumpsum, savingsList, interestRate, monthlySavingsViewBoolean, event);
