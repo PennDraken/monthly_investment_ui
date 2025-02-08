@@ -66,7 +66,21 @@ main {
 label {
     font-size: 1.2rem;
     display: block;
-    margin-bottom: 8px;
+    
+}
+
+.label-container {
+  display: flex;
+  align-items: center;
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+
+.input-icon {
+  width: 36px;  /* Adjust size based on your design */
+  height: auto;
+  margin-right: 10px;  /* Space between the icon and the label */
+  vertical-align: middle;
 }
 
 input[type="number"], input[type="text"] {
