@@ -213,14 +213,14 @@ canvas {
     right: 0;
     bottom: 0;
     border-radius: 8px;
-    background-color: #2e2e2e;
+    background-color: #3e3e3e;
     transition: .4s;
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 10px;
     font-size: 14px;
-    /* font-weight: bold;*/
+    font-weight: bold;
     color: black;
     text-transform: uppercase;
     height: 100%; /* Ensure the slider's height matches the parent */
@@ -243,15 +243,14 @@ canvas {
     width: calc(50% - 4px);
     left: 4px;
     bottom: 4px;
-    /* background-color: white; */
-    background-color: #4e4e4e;
+    background-color: white;
     transition: .4s;
     border-radius: 8px;
   }
   
   /* When checked */
   input:checked + .slider {
-    background-color: #2e2e2e;
+    background-color: #3e3e3e;
   }
   
   input:checked + .slider:before {
