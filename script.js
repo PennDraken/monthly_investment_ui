@@ -341,8 +341,26 @@ document.addEventListener("DOMContentLoaded", () => {
         else if (maxCapital < 250000) {
             tickIncrement = 50000;
         }
-        else if (maxCapital < 500000) {
+        else if (maxCapital < 1000000) { // 1 million
             tickIncrement = 100000;
+        }
+        else if (maxCapital < 2500000) { // 2.5 million
+            tickIncrement = 250000;
+        }
+        else if (maxCapital < 5000000) { // 5 million
+            tickIncrement = 500000;
+        }
+        else if (maxCapital < 10000000) { // 10 million
+            tickIncrement = 1000000;
+        }
+        else if (maxCapital < 25*Math.pow(10,6)) {
+            tickIncrement = 2.5*Math.pow(10,6);
+        }
+        else if (maxCapital < 50*Math.pow(10,6)) {
+            tickIncrement = 10*Math.pow(10,6);
+        }
+        else {
+            tickIncrement = 50*Math.pow(10,6);
         }
         for (let i = tickIncrement; i < maxCapital; i += tickIncrement) {
             const y = resultCanvas.height - (i / maxCapital) * (resultCanvas.height - startY) - startY;
