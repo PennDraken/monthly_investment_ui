@@ -129,6 +129,20 @@ document.addEventListener("DOMContentLoaded", () => {
         return barWidth;
     };
     
+    function drawCircle(ctx, x, y, radius, fill, stroke, strokeWidth) {
+        ctx.beginPath()
+        ctx.arc(x, y, radius, 0, 2 * Math.PI, false)
+        if (fill) {
+          ctx.fillStyle = fill
+          ctx.fill()
+        }
+        if (stroke) {
+          ctx.lineWidth = strokeWidth
+          ctx.strokeStyle = stroke
+          ctx.stroke()
+        }
+      }
+
     // Draw bars function
     const drawBars = () => {
         updateCanvasSize(); // Ensure canvas size is correct before rendering
@@ -142,7 +156,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // const years = parseInt(yearsInput.value);
         const maxValue = Math.max(...barData);
         const tempMaxValue = Math.max(MAX_BAR_HEIGHT, maxValue + 5000)
-        const gap = barWidth * 0.04
+        const gap = barWidth * 0.9 // barWidth * 0.04
 
         // Draw horisontal ticks
         for (let i = 0; i < tempMaxValue; i += 5000) {
@@ -160,20 +174,28 @@ document.addEventListener("DOMContentLoaded", () => {
         for (let i = 0; i < years; i++) {
             const x = i * barWidth; // X position for each bar, no spacing
             const originalHeight = barData[i]; // Original height based on barData
-
+        
             const barHeight = Math.min(maxBarHeight, (originalHeight / tempMaxValue) * canvas.height);
             const y = canvas.height - barHeight; // Y position is calculated inversely from the bottom
-
+        
             ctx.fillStyle = "skyblue";
-            ctx.fillRect(x + gap / 2, y, barWidth - gap, barHeight); // Draw the bar at calculated position
-
+            ctx.fillRect(x + barWidth / 2 - gap / 2, y, gap, barHeight); // Draw the bar at calculated position
+        
+            // drawCircle(ctx, x + barWidth / 2, y, gap / 2, 'skyblue', 'skyblue');
+        
+            ctx.save(); // Save the current canvas state
+            ctx.translate(x + barWidth / 2, y - 10); // Move the canvas origin to where the text should go
+            ctx.rotate(3 * Math.PI / 2); // Rotate the canvas 90 degrees clockwise
             ctx.fillStyle = "white";
-            ctx.font = "12px Arial";  // Set the font size to 20px (you can adjust this value)
-            ctx.textAlign = "center";
-            ctx.fillText(formatNumberWithSpaces(originalHeight), x + barWidth / 2, y - 10); // Show the original value (from barData)
+            ctx.font = "bold 36px Arial"; // Set the font size
+            ctx.textAlign = "left";
+            ctx.textBaseline = "middle"
+            ctx.fillText(formatNumberWithSpaces(originalHeight), 0, 0); // Draw the text at the new origin
+            ctx.restore(); // Restore the canvas state
         }
-
+                
         // Draw text
+        /*
         for (let i = 5000; i < tempMaxValue; i += 5000) {
             const y = canvas.height - Math.min(maxBarHeight, (i / tempMaxValue) * canvas.height);
 
@@ -182,6 +204,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ctx.fillStyle = "white";
             ctx.fillText(formatNumberWithSpaces(i), 10, y);
         }
+        */
     };
 
     // Initial scale and draw
@@ -415,9 +438,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    function capitalHistoryClick() {
-
-    }
 
     // Initially update the results when the page loads
     updateResults();

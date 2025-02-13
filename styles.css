@@ -157,7 +157,7 @@ canvas {
 .empty-frame {
     background-color: #3e3e3e;  /* Same background as the input fields */
     border-radius: 4px;
-    padding: 20px;
+    padding: 4px;
     color: #fff;
     font-size: 1.2rem;
     font-style: italic;
