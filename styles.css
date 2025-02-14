@@ -18,12 +18,14 @@
 body {
     margin: 0;
     font-family: Arial, sans-serif;
+    background-image: url("background/repeating-dither.png"), url("background/dither-background.png");
     background-color: #2e2e2e;
     color: #ffffff;
     display: flex;
     flex-direction: column;
     align-items: center;
     overflow-x: hidden;
+    background-position: bottom;
 }
 
 header {
@@ -32,6 +34,9 @@ header {
     padding: 20px;
     text-align: center;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 h1 {
