@@ -15,17 +15,18 @@
   }
   
 
-body {
+  body {
     margin: 0;
     font-family: Arial, sans-serif;
     background-image: url("background/repeating-dither.png"), url("background/dither-background.png");
-    background-color: #2e2e2e;
+    background-color: #000000;
     color: #ffffff;
     display: flex;
     flex-direction: column;
     align-items: center;
     overflow-x: hidden;
     background-position: bottom;
+    background-repeat: repeat, repeat-x; /* First repeats both ways, second repeats horizontally */
 }
 
 header {
