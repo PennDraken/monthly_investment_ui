@@ -178,9 +178,12 @@ document.addEventListener("DOMContentLoaded", () => {
             const barHeight = Math.min(maxBarHeight, (originalHeight / tempMaxValue) * canvas.height);
             const y = canvas.height - barHeight; // Y position is calculated inversely from the bottom
         
+            // ctx.fillRect(x + barWidth / 2 - gap / 2, y, gap, barHeight); // Draw the bar at calculated position
+            ctx.beginPath();
             ctx.fillStyle = "skyblue";
-            ctx.fillRect(x + barWidth / 2 - gap / 2, y, gap, barHeight); // Draw the bar at calculated position
-        
+            ctx.roundRect(x + barWidth / 2 - gap / 2, y, gap, barHeight, 8); // Draw the bar at calculated position
+            ctx.stroke();
+            ctx.fill();
             // drawCircle(ctx, x + barWidth / 2, y, gap / 2, 'skyblue', 'skyblue');
         
             ctx.save(); // Save the current canvas state
