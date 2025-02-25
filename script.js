@@ -317,13 +317,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const capitalHistory = calculateMonthlyCapital(lumpsum, savingsList, interestRate, monthlySavingsViewBoolean, event);
 
         // Draw the total amount result graph
-        plotGraph(resultCanvas, resultContext, capitalHistory, event);
+        plotGraph(resultCanvas, resultContext, capitalHistory, event, "skyblue");
         // Draw the interest graph
         let interestHistory = [];
         capitalHistory.forEach((moneyValue) => {
-            interestHistory.push(moneyValue * interestRate)
+            interestHistory.push(moneyValue * interestRate / 12)
         });
-        plotGraph(interestResultCanvas, interestResultContext, interestHistory, event);
+        plotGraph(interestResultCanvas, interestResultContext, interestHistory, event, "lightgreen");
 
         finalValueText.textContent = formatNumberWithSpaces(Math.max(...capitalHistory).toFixed(0));
         if (monthlySavingsViewBoolean) {
@@ -336,7 +336,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Function to draw the capital history on the result canvas
-    function plotGraph(canvas, ctx, capitalHistory, event) {
+    function plotGraph(canvas, ctx, capitalHistory, event, color) {
         canvas.width = canvas.offsetWidth;
         canvas.height = canvas.offsetHeight;
 
@@ -353,6 +353,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         else if (maxCapital < 25000) {
             tickIncrement = 5000;
+        }
+        else if (maxCapital < 50000) {
+            tickIncrement = 10000;
         }
         else if (maxCapital < 100000) {
             tickIncrement = 25000;
@@ -398,7 +401,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const x = (i / capitalHistory.length) * (canvas.width - startX) + startX;
             const y = canvas.height - (capitalHistory[i] / maxCapital) * (canvas.height - startY) - startY;  // Inverse so that higher values go up
 
-            ctx.fillStyle = "skyblue";
+            ctx.fillStyle = color;
             ctx.fillRect(x, y, (canvas.width - startX) / capitalHistory.length + 1, canvas.height - y - startY); // Draw the bars representing capital over time
         }
 
