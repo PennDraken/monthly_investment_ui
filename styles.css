@@ -186,6 +186,10 @@ canvas {
 
 }
 
+#interestResultCanvas {
+  height: 200px;
+}
+
 canvas {
     width: 100%;
     max-width: 600px;

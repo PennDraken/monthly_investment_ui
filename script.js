@@ -22,6 +22,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const resultCanvas = document.getElementById('resultCanvas');
     const resultContext = resultCanvas.getContext("2d");
     const finalValueText = document.getElementById('final-value-number');
+    const interestResultCanvas = document.getElementById('interestResultCanvas');
+    const interestResultContext = interestResultCanvas.getContext("2d");
+
+
     const yearLabel = document.getElementById('year-label');
     const monthLabel = document.getElementById('months-label');
     const monthlyAnnualToggle = document.getElementById('monthlyAnnualToggle');
@@ -312,8 +316,14 @@ document.addEventListener("DOMContentLoaded", () => {
         // Get the calculated capital history
         const capitalHistory = calculateMonthlyCapital(lumpsum, savingsList, interestRate, monthlySavingsViewBoolean, event);
 
-        // Draw the result graph
-        drawCapitalHistory(capitalHistory, event);
+        // Draw the total amount result graph
+        plotGraph(resultCanvas, resultContext, capitalHistory, event);
+        // Draw the interest graph
+        let interestHistory = [];
+        capitalHistory.forEach((moneyValue) => {
+            interestHistory.push(moneyValue * interestRate)
+        });
+        plotGraph(interestResultCanvas, interestResultContext, interestHistory, event);
 
         finalValueText.textContent = formatNumberWithSpaces(Math.max(...capitalHistory).toFixed(0));
         if (monthlySavingsViewBoolean) {
@@ -326,19 +336,25 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Function to draw the capital history on the result canvas
-    function drawCapitalHistory(capitalHistory, event) {
-        resultCanvas.width = resultCanvas.offsetWidth;
-        resultCanvas.height = resultCanvas.offsetHeight;
+    function plotGraph(canvas, ctx, capitalHistory, event) {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
 
         const maxCapital = 1.1 * Math.max(...capitalHistory); // Maximum value of capital to scale bars
 
-        resultContext.clearRect(0, 0, resultCanvas.width, resultCanvas.height); // Clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
 
         // Draw horisontal ticks
         const startX = 90;
         const startY = 30;
         let tickIncrement = 250000;
-        if (maxCapital < 100000) {
+        if (maxCapital < 10000) {
+            tickIncrement = 1000;
+        }
+        else if (maxCapital < 25000) {
+            tickIncrement = 5000;
+        }
+        else if (maxCapital < 100000) {
             tickIncrement = 25000;
         }
         else if (maxCapital < 250000) {
@@ -366,56 +382,56 @@ document.addEventListener("DOMContentLoaded", () => {
             tickIncrement = 50*Math.pow(10,6);
         }
         for (let i = tickIncrement; i < maxCapital; i += tickIncrement) {
-            const y = resultCanvas.height - (i / maxCapital) * (resultCanvas.height - startY) - startY;
+            const y = canvas.height - (i / maxCapital) * (canvas.height - startY) - startY;
 
-            resultContext.beginPath();        // Start a new path
-            resultContext.moveTo(startX, y);       // Move to the starting point (left edge, at height y)
-            resultContext.lineTo(resultCanvas.width, y);   // Draw to the right edge (same y-coordinate)
-            resultContext.strokeStyle = "gray";  // Set the line color
-            resultContext.lineWidth = 2;      // Set line width (optional)
-            resultContext.stroke();           // Render the line
+            ctx.beginPath();        // Start a new path
+            ctx.moveTo(startX, y);       // Move to the starting point (left edge, at height y)
+            ctx.lineTo(canvas.width, y);   // Draw to the right edge (same y-coordinate)
+            ctx.strokeStyle = "gray";  // Set the line color
+            ctx.lineWidth = 2;      // Set line width (optional)
+            ctx.stroke();           // Render the line
         }
 
 
         // Loop through and plot each point
         for (let i = 0; i < capitalHistory.length; i++) {
-            const x = (i / capitalHistory.length) * (resultCanvas.width - startX) + startX;
-            const y = resultCanvas.height - (capitalHistory[i] / maxCapital) * (resultCanvas.height - startY) - startY;  // Inverse so that higher values go up
+            const x = (i / capitalHistory.length) * (canvas.width - startX) + startX;
+            const y = canvas.height - (capitalHistory[i] / maxCapital) * (canvas.height - startY) - startY;  // Inverse so that higher values go up
 
-            resultContext.fillStyle = "skyblue";
-            resultContext.fillRect(x, y, (resultCanvas.width - startX) / capitalHistory.length + 1, resultCanvas.height - y - startY); // Draw the bars representing capital over time
+            ctx.fillStyle = "skyblue";
+            ctx.fillRect(x, y, (canvas.width - startX) / capitalHistory.length + 1, canvas.height - y - startY); // Draw the bars representing capital over time
         }
 
         // Draw text
         for (let i = tickIncrement; i < maxCapital; i += tickIncrement) {
-            const y = resultCanvas.height - (i / maxCapital) * resultCanvas.height;
+            const y = canvas.height - (i / maxCapital) * canvas.height;
 
             // if (i + 50000 > Math.min(...capitalHistory)) {
-            resultContext.font = "20px Arial";  // Set the font size to 20px (you can adjust this value)
-            resultContext.fillStyle = "white";
-            resultContext.textAlign = "center"
-            resultContext.fillText(formatNumberWithSpaces(i), startX / 2, y);
+            ctx.font = "20px Arial";  // Set the font size to 20px (you can adjust this value)
+            ctx.fillStyle = "white";
+            ctx.textAlign = "center"
+            ctx.fillText(formatNumberWithSpaces(i), startX / 2, y);
             // }
         }
 
 
         // Plot vertical ticks
         for (let i = 0; i < capitalHistory.length; i++) {
-            const x = (i / capitalHistory.length) * (resultCanvas.width - startX) + startX;
-            const y = resultCanvas.height - (capitalHistory[i] / maxCapital) * resultCanvas.height;  // Inverse so that higher values go up
+            const x = (i / capitalHistory.length) * (canvas.width - startX) + startX;
+            const y = canvas.height - (capitalHistory[i] / maxCapital) * canvas.height;  // Inverse so that higher values go up
 
             if (i % 12 == 0) {
-                resultContext.beginPath();        // Start a new path
-                resultContext.moveTo(x, 0);       // Move to the starting point (left edge, at height y)
-                resultContext.lineTo(x, resultCanvas.height);   // Draw to the right edge (same y-coordinate)
-                resultContext.strokeStyle = "gray";  // Set the line color
-                resultContext.lineWidth = 2;      // Set line width (optional)
-                resultContext.stroke();           // Render the line
+                ctx.beginPath();        // Start a new path
+                ctx.moveTo(x, 0);       // Move to the starting point (left edge, at height y)
+                ctx.lineTo(x, canvas.height);   // Draw to the right edge (same y-coordinate)
+                ctx.strokeStyle = "gray";  // Set the line color
+                ctx.lineWidth = 2;      // Set line width (optional)
+                ctx.stroke();           // Render the line
 
-                resultContext.font = "20px Arial";  // Set the font size to 20px (you can adjust this value)
-                resultContext.fillStyle = "white";
-                resultContext.textAlign = "center"
-                resultContext.fillText(Math.round(i / 12), x, resultCanvas.height);
+                ctx.font = "20px Arial";  // Set the font size to 20px (you can adjust this value)
+                ctx.fillStyle = "white";
+                ctx.textAlign = "center"
+                ctx.fillText(Math.round(i / 12), x, canvas.height);
 
             }
         }
@@ -424,42 +440,39 @@ document.addEventListener("DOMContentLoaded", () => {
         if (event) {
             let mouseX = event.offsetX;
             let mouseY = event.offsetY;
-            let barWidth = (resultCanvas.width - startX) / capitalHistory.length + 1
+            let barWidth = (canvas.width - startX) / capitalHistory.length + 1
 
             // Iterate through all bars to find correspond bar
             for (let i = 0; i < capitalHistory.length; i++) {
-                const x = (i / capitalHistory.length) * (resultCanvas.width - startX) + startX;
-                const y = resultCanvas.height - (capitalHistory[i] / maxCapital) * (resultCanvas.height - startY) - startY;  // Inverse so that higher values go up
+                const x = (i / capitalHistory.length) * (canvas.width - startX) + startX;
+                const y = canvas.height - (capitalHistory[i] / maxCapital) * (canvas.height - startY) - startY;  // Inverse so that higher values go up
     
                 if (mouseX > x && mouseX < x + barWidth) {
                     // Draw selected bar
-                    let gradient = resultContext.createLinearGradient(x, y, x, resultCanvas.height - startY);
+                    let gradient = resultContext.createLinearGradient(x, y, x, canvas.height - startY);
                     gradient.addColorStop(0, "rgba(255, 255, 255, 1)");  // Fully opaque white at the top
                     gradient.addColorStop(1, "rgba(255, 255, 255, 0)");  // Fully transparent at the bottom
                 
                     // Apply gradient
-                    resultContext.fillStyle = gradient;
-                    resultContext.fillRect(x, y, barWidth, resultCanvas.height - y - startY);                
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(x, y, barWidth, canvas.height - y - startY);                
                     // Draw date
-                    resultContext.font = "bold 20px Arial";  // Set the font size to 20px (you can adjust this value)
-                    resultContext.fillStyle = "white";
-                    resultContext.textAlign = "center"
-                    resultContext.fillText(Math.floor(i / 12) + ' years ' + i % 12 + ' months', x + barWidth/2, resultCanvas.height - startY - 20);
+                    ctx.font = "bold 20px Arial";  // Set the font size to 20px (you can adjust this value)
+                    ctx.fillStyle = "white";
+                    ctx.textAlign = "center"
+                    ctx.fillText(Math.floor(i / 12) + ' years ' + i % 12 + ' months', x + barWidth/2, canvas.height - startY - 20);
 
                     // Draw money amount
-                    resultContext.font = "bold 36px Arial";  // Set the font size to 20px (you can adjust this value)
-                    resultContext.fillStyle = "white";
-                    resultContext.textAlign = "center"
-                    resultContext.fillText(formatNumberWithSpaces(Math.round(capitalHistory[i])) + ' kr', x, y);
+                    ctx.font = "bold 36px Arial";  // Set the font size to 20px (you can adjust this value)
+                    ctx.fillStyle = "white";
+                    ctx.textAlign = "center"
+                    ctx.fillText(formatNumberWithSpaces(Math.round(capitalHistory[i])) + ' kr', x, y);
                     break;
 
                 }
             }
         }
     }
-
-
-
     // Initially update the results when the page loads
     updateResults();
 
