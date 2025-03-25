@@ -238,6 +238,10 @@ document.addEventListener("DOMContentLoaded", () => {
         updateResults(event);
     });
 
+    interestResultCanvas.addEventListener("mousedown", (event) => {
+        updateResults(event);
+    });
+
     function handleMouseEvent(event) {
         const mouseX = event.offsetX;
         const mouseY = event.offsetY;
