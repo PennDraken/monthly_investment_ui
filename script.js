@@ -349,7 +349,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
 
         // Draw horisontal ticks
-        const startX = 90;
+        const startX = 50;
         const startY = 30;
         let tickIncrement = 250000;
         if (maxCapital < 10000) {
@@ -409,18 +409,17 @@ document.addEventListener("DOMContentLoaded", () => {
             ctx.fillRect(x, y, (canvas.width - startX) / capitalHistory.length + 1, canvas.height - y - startY); // Draw the bars representing capital over time
         }
 
-        // Draw text
+        // Draw text for y ticks
         for (let i = tickIncrement; i < maxCapital; i += tickIncrement) {
             const y = canvas.height - (i / maxCapital) * canvas.height;
 
             // if (i + 50000 > Math.min(...capitalHistory)) {
-            ctx.font = "20px Arial";  // Set the font size to 20px (you can adjust this value)
+            ctx.font = "14px Arial";  // Set the font size to 20px (you can adjust this value)
             ctx.fillStyle = "white";
             ctx.textAlign = "center"
-            ctx.fillText(formatNumberWithSpaces(i), startX / 2, y);
-            // }
+            const numberText = formatNumberWithSpaces(i/1000) + "k"
+            ctx.fillText(numberText, startX / 2, y);
         }
-
 
         // Plot vertical ticks
         for (let i = 0; i < capitalHistory.length; i++) {
