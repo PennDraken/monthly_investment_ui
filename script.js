@@ -408,13 +408,13 @@ document.addEventListener("DOMContentLoaded", () => {
             ctx.fillStyle = color;
             ctx.fillRect(x, y, (canvas.width - startX) / capitalHistory.length + 1, canvas.height - y - startY); // Draw the bars representing capital over time
         }
-
+        const labelFont = "14px Arial";
         // Draw text for y ticks
         for (let i = tickIncrement; i < maxCapital; i += tickIncrement) {
             const y = canvas.height - (i / maxCapital) * canvas.height;
 
             // if (i + 50000 > Math.min(...capitalHistory)) {
-            ctx.font = "14px Arial";  // Set the font size to 20px (you can adjust this value)
+            ctx.font = labelFont;  // Set the font size to 20px (you can adjust this value)
             ctx.fillStyle = "white";
             ctx.textAlign = "center"
             const numberText = formatNumberWithSpaces(i/1000) + "k"
@@ -434,7 +434,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 ctx.lineWidth = 2;      // Set line width (optional)
                 ctx.stroke();           // Render the line
 
-                ctx.font = "20px Arial";  // Set the font size to 20px (you can adjust this value)
+                ctx.font = labelFont;  // Set the font size to 20px (you can adjust this value)
                 ctx.fillStyle = "white";
                 ctx.textAlign = "center"
                 ctx.fillText(Math.round(i / 12), x, canvas.height);
