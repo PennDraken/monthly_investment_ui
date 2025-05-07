@@ -51,12 +51,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     yearsSlider.addEventListener('input', () => {
         yearsInput.value = yearsSlider.value;
-        drawBars();
+        drawMonthlySavingsInputChart();
         updateResults();
     });
     monthlySavingsSlider.addEventListener('input', () => {
         monthlySavingsInput.value = formatNumberWithSpaces(monthlySavingsSlider.value);
-        drawBars();
+        drawMonthlySavingsInputChart();
         updateResults();
     });
 
@@ -71,12 +71,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     yearsInput.addEventListener('input', () => {
         yearsSlider.value = convertTextToNumber(yearsInput.value);
-        drawBars();
+        drawMonthlySavingsInputChart();
         updateResults();
     });
     monthlySavingsInput.addEventListener('input', () => {
         monthlySavingsSlider.value = convertTextToNumber(monthlySavingsInput.value);
-        drawBars();
+        drawMonthlySavingsInputChart();
         updateResults();
     });
 
@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
             yearsUnitLabel.textContent = "years";
         }
         console.log(`Pressed toggle! ${monthlySavingsViewBoolean}`);
-        drawBars();
+        drawMonthlySavingsInputChart();
         updateResults();
     });
 
@@ -103,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
             changingMonthlySavingsGroup.style.display = "block"
             fixedMonthlySavingsGroup.style.display = "none";
         }
-        drawBars();
+        drawMonthlySavingsInputChart();
         updateResults();
     });
 
@@ -115,6 +115,9 @@ document.addEventListener("DOMContentLoaded", () => {
     let barData = new Array(1000).fill(0);
     // Maximum possible height for a bar
     const MAX_BAR_HEIGHT = 15000;
+    const BARCHART_FLOOR_Y = 50; // Lowest Y position for the bars
+    const LABELFONT = "14px Arial";
+
 
     // Define the snap value (this can be easily adjusted in one place now)
     const SNAP_VALUE = 1000; // Snap to the closest multiple of 1000
@@ -148,24 +151,22 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
     // Draw bars function
-    const drawBars = () => {
+    const drawMonthlySavingsInputChart = () => {
         updateCanvasSize(); // Ensure canvas size is correct before rendering
         ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas before each redraw
-
         let years = parseInt(yearsInput.value);
 
         const barWidth = calculateBarWidth(years); // Get dynamic bar width
-        const maxBarHeight = canvas.height; // Max height constraint for bars
-        console.log(years);
-        // const years = parseInt(yearsInput.value);
+        const maxBarHeight = canvas.height - BARCHART_FLOOR_Y; // Max height constraint for bars
         const maxValue = Math.max(...barData);
         const tempMaxValue = Math.max(MAX_BAR_HEIGHT, maxValue + 5000)
-        const gap = barWidth * 0.9 // barWidth * 0.04
+        const gap = barWidth * 0.9 // gap between bars
 
         // Draw horisontal ticks
         for (let i = 0; i < tempMaxValue; i += 5000) {
-            const y = canvas.height - Math.min(maxBarHeight, (i / tempMaxValue) * canvas.height);
-
+            const tickHeight = (canvas.height - BARCHART_FLOOR_Y) / (tempMaxValue);
+            console.log(tickHeight)
+            const y = canvas.height - BARCHART_FLOOR_Y - tickHeight * i;
             ctx.beginPath();        // Start a new path
             ctx.moveTo(0, y);       // Move to the starting point (left edge, at height y)
             ctx.lineTo(canvas.width, y);   // Draw to the right edge (same y-coordinate)
@@ -179,8 +180,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const x = i * barWidth; // X position for each bar, no spacing
             const originalHeight = barData[i]; // Original height based on barData
         
-            const barHeight = Math.min(maxBarHeight, (originalHeight / tempMaxValue) * canvas.height);
-            const y = canvas.height - barHeight; // Y position is calculated inversely from the bottom
+            const barHeight = Math.min(maxBarHeight, (originalHeight / tempMaxValue) * (canvas.height - BARCHART_FLOOR_Y));
+            const y = canvas.height - BARCHART_FLOOR_Y - barHeight; // Y position is calculated inversely from the bottom
         
             // ctx.fillRect(x + barWidth / 2 - gap / 2, y, gap, barHeight); // Draw the bar at calculated position
             ctx.beginPath();
@@ -191,15 +192,28 @@ document.addEventListener("DOMContentLoaded", () => {
             // drawCircle(ctx, x + barWidth / 2, y, gap / 2, 'skyblue', 'skyblue');
         
             ctx.save(); // Save the current canvas state
-            ctx.translate(x + barWidth / 2, y - 10); // Move the canvas origin to where the text should go
-            ctx.rotate(3 * Math.PI / 2); // Rotate the canvas 90 degrees clockwise
+            ctx.translate(x + barWidth / 2, y - 10);
+            ctx.rotate(3 * Math.PI / 2);
             ctx.fillStyle = "white";
-            ctx.font = "bold 36px Arial"; // Set the font size
+            ctx.font = "bold 36px Arial"
             ctx.textAlign = "left";
             ctx.textBaseline = "middle"
             ctx.fillText(formatNumberWithSpaces(originalHeight), 0, 0); // Draw the text at the new origin
             ctx.restore(); // Restore the canvas state
+
+            // Add text for months
+            ctx.font = LABELFONT;
+            ctx.fillStyle = "white";
+            ctx.textAlign = "center"; 
+            ctx.fillText(i + 1, x + barWidth / 2, canvas.height - BARCHART_FLOOR_Y + 20);
         }
+
+        // Draw label for x axis
+        ctx.font = LABELFONT; 
+        ctx.fillStyle = "white";
+        ctx.textAlign = "center";
+        const textString = monthlySavingsViewBoolean ? "Years" : "Months";
+        ctx.fillText(textString, canvas.width / 2, canvas.height - 10);
                 
         // Draw text
         /*
@@ -215,7 +229,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // Initial scale and draw
-    drawBars();
+    drawMonthlySavingsInputChart();
 
     let isMousePressed = false; // To track if the mouse is pressed
 
@@ -252,20 +266,20 @@ document.addEventListener("DOMContentLoaded", () => {
         const barWidth = calculateBarWidth(years); // Get the updated bar width
         const maxValue = Math.max(...barData)
         const tempMaxValue = Math.max(MAX_BAR_HEIGHT, maxValue + 5000)
-
+        const newCanvasHeight = canvas.height - BARCHART_FLOOR_Y;
         for (let i = 0; i < barData.length; i++) {
             const x = i * barWidth;
 
             if (mouseX >= x && mouseX <= x + barWidth) {
-                const pixelHeight = Math.max(0, canvas.height - mouseY);
+                const pixelHeight = Math.max(0, newCanvasHeight - mouseY);
                 // Convert the pixel height to the corresponding bar value
-                const newHeight = (pixelHeight / canvas.height) * tempMaxValue;
+                const newHeight = (pixelHeight / newCanvasHeight) * tempMaxValue;
                 // Snap the new height to the nearest multiple of SNAP_VALUE
                 const snappedHeight = Math.round(newHeight / SNAP_VALUE) * SNAP_VALUE;
 
                 barData[i] = snappedHeight; // Update the bar data with the snapped value
 
-                drawBars(); // Redraw the bars with the updated data
+                drawMonthlySavingsInputChart(); // Redraw the bars with the updated data
                 break;
             }
         }
@@ -408,13 +422,12 @@ document.addEventListener("DOMContentLoaded", () => {
             ctx.fillStyle = color;
             ctx.fillRect(x, y, (canvas.width - startX) / capitalHistory.length + 1, canvas.height - y - startY); // Draw the bars representing capital over time
         }
-        const labelFont = "14px Arial";
         // Draw text for y ticks
         for (let i = tickIncrement; i < maxCapital; i += tickIncrement) {
             const y = canvas.height - (i / maxCapital) * canvas.height;
 
             // if (i + 50000 > Math.min(...capitalHistory)) {
-            ctx.font = labelFont;  // Set the font size to 20px (you can adjust this value)
+            ctx.font = LABELFONT;  // Set the font size to 20px (you can adjust this value)
             ctx.fillStyle = "white";
             ctx.textAlign = "center"
             const numberText = formatNumberWithSpaces(i/1000) + "k"
@@ -434,11 +447,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 ctx.lineWidth = 2;      // Set line width (optional)
                 ctx.stroke();           // Render the line
 
-                ctx.font = labelFont;  // Set the font size to 20px (you can adjust this value)
+                ctx.font = LABELFONT;  // Set the font size to 20px (you can adjust this value)
                 ctx.fillStyle = "white";
                 ctx.textAlign = "center"
                 ctx.fillText(Math.round(i / 12), x, canvas.height);
-
             }
         }
 
