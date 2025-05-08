@@ -30,13 +30,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const monthLabel = document.getElementById('months-label');
     const monthlyAnnualToggle = document.getElementById('monthlyAnnualToggle');
     const fixedChangingToggle = document.getElementById('fixedChangingToggle');
+    const rateIndexToggle = document.getElementById('rateIndexToggle');
     const yearsUnitLabel = document.getElementById('yearsUnitLabel');
     const fixedMonthlySavingsGroup = document.getElementById('fixedMonthlySavingsGroup');
     const changingMonthlySavingsGroup = document.getElementById('changingMonthlySavingsGroup');
+    const fixedRateGroup = document.getElementById('fixedRateGroup');
+    const indexRateGroup = document.getElementById('indexRateGroup');
 
     let monthlySavingsViewBoolean = true; // Controls wether user can input more detailed savings data
     let fixedViewBoolean = true; // Controls wether the input for monthly savings should be fixed or variable
     changingMonthlySavingsGroup.style.display = "none"; // Hide barGraph input (syncs with fixedViewBoolean)
+    let rateIndexBoolean = false; 
+    indexRateGroup.style.display = "none";
 
     // Function to update values when slider changes
     // Set up event listeners for the sliders and inputs
@@ -102,6 +107,19 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             changingMonthlySavingsGroup.style.display = "block"
             fixedMonthlySavingsGroup.style.display = "none";
+        }
+        drawMonthlySavingsInputChart();
+        updateResults();
+    });
+
+    rateIndexToggle.addEventListener('change', function () {
+        rateIndexBoolean = !rateIndexBoolean;
+        if (rateIndexBoolean) {
+            fixedRateGroup.style.display = "none";
+            indexRateGroup.style.display = "block";
+        } else {
+            fixedRateGroup.style.display = "block"
+            indexRateGroup.style.display = "none";
         }
         drawMonthlySavingsInputChart();
         updateResults();
