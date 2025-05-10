@@ -233,15 +233,18 @@ document.addEventListener("DOMContentLoaded", () => {
             ctx.fill();
             // drawCircle(ctx, x + barWidth / 2, y, gap / 2, 'skyblue', 'skyblue');
         
-            ctx.save(); // Save the current canvas state
-            ctx.translate(x + barWidth / 2, y - 10);
-            ctx.rotate(3 * Math.PI / 2);
-            ctx.fillStyle = "white";
-            ctx.font = "bold 36px Arial"
-            ctx.textAlign = "left";
-            ctx.textBaseline = "middle"
-            ctx.fillText(formatNumberWithSpaces(originalHeight), 0, 0); // Draw the text at the new origin
-            ctx.restore(); // Restore the canvas state
+            if (originalHeight != 0) {
+                ctx.save(); // Save the current canvas state
+                ctx.translate(x + barWidth / 2, y - 10);
+                ctx.rotate(3 * Math.PI / 2);
+                ctx.fillStyle = "white";
+                ctx.font = "bold 36px Arial"
+                ctx.textAlign = "left";
+                ctx.textBaseline = "middle"
+                ctx.fillText(formatNumberWithSpaces(originalHeight), 0, 0); // Draw the text at the new origin
+                ctx.restore(); // Restore the canvas state
+            }
+
 
             // Add text for months
             ctx.font = LABELFONT;
