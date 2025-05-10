@@ -137,7 +137,9 @@ document.addEventListener("DOMContentLoaded", () => {
         endDate = new Date(maxEndDate);
     }
 
-    const maxEndDate = new Date(omx30Data[omx30Data.length - 1][0]);
+    // const index = omx30Data;
+    const index = sp500Data;
+    const maxEndDate = new Date(index[index.length - 1][0]);
     let startDate = new Date(maxEndDate);
     startDate.setMonth(startDate.getMonth() - 12 * parseInt(yearsInput.value));
     let endDate = new Date(maxEndDate);
@@ -437,7 +439,7 @@ document.addEventListener("DOMContentLoaded", () => {
         let capitalHistory = calculateMonthlyCapital(lumpsum, savingsList, interestRate, monthlySavingsViewBoolean, event);
         if (rateIndexBoolean) {
             // Overwrite capitalHistory with the index data
-            capitalHistory = calculateMonthlyCapitalWithIndex(lumpsum, savingsList, interestRate, monthlySavingsViewBoolean, omx30Data, startDate, endDate);
+            capitalHistory = calculateMonthlyCapitalWithIndex(lumpsum, savingsList, interestRate, monthlySavingsViewBoolean, index, startDate, endDate);
         }
 
         // Draw the total amount result graph
@@ -508,6 +510,8 @@ document.addEventListener("DOMContentLoaded", () => {
         else {
             tickIncrement = 50*Math.pow(10,6);
         }
+
+        // Horisontal lines
         for (let i = tickIncrement; i < maxCapital; i += tickIncrement) {
             const y = canvas.height - (i / maxCapital) * (canvas.height - startY) - startY;
 
@@ -519,7 +523,6 @@ document.addEventListener("DOMContentLoaded", () => {
             ctx.stroke();           // Render the line
         }
 
-
         // Loop through and plot each point
         for (let i = 0; i < capitalHistory.length; i++) {
             const x = (i / capitalHistory.length) * (canvas.width - startX) + startX;
@@ -528,15 +531,15 @@ document.addEventListener("DOMContentLoaded", () => {
             ctx.fillStyle = color;
             ctx.fillRect(x, y, (canvas.width - startX) / capitalHistory.length + 1, canvas.height - y - startY); // Draw the bars representing capital over time
         }
+        
         // Draw text for y ticks
         for (let i = tickIncrement; i < maxCapital; i += tickIncrement) {
-            const y = canvas.height - (i / maxCapital) * canvas.height;
-
-            // if (i + 50000 > Math.min(...capitalHistory)) {
-            ctx.font = LABELFONT;  // Set the font size to 20px (you can adjust this value)
+            const y = canvas.height - (i / maxCapital) * (canvas.height - startY) - startY;
+            ctx.font = LABELFONT;
             ctx.fillStyle = "white";
-            ctx.textAlign = "center"
-            const numberText = formatNumberWithSpaces(i/1000) + "k"
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            const numberText = formatNumberWithSpaces(i / 1000) + "k";
             ctx.fillText(numberText, startX / 2, y);
         }
 
@@ -581,13 +584,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     ctx.fillStyle = gradient;
                     ctx.fillRect(x, y, barWidth, canvas.height - y - startY);                
                     // Draw date
-                    ctx.font = "bold 20px Arial";  // Set the font size to 20px (you can adjust this value)
+                    ctx.font = "bold 20px Arial";
                     ctx.fillStyle = "white";
                     ctx.textAlign = "center"
                     ctx.fillText(Math.floor(i / 12) + ' years ' + i % 12 + ' months', x + barWidth/2, canvas.height - startY - 20);
 
                     // Draw money amount
-                    ctx.font = "bold 36px Arial";  // Set the font size to 20px (you can adjust this value)
+                    ctx.font = "bold 36px Arial"; 
                     ctx.fillStyle = "white";
                     ctx.textAlign = "center"
                     ctx.fillText(formatNumberWithSpaces(Math.round(capitalHistory[i])) + ' kr', x, y);
