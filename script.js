@@ -24,24 +24,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const interestResultCanvas = document.getElementById('interestResultCanvas');
     const interestResultContext = interestResultCanvas.getContext("2d");
 
-    const shuffleIndexButton = document.getElementById('shuffleIndexButton');
-
     const yearLabel = document.getElementById('year-label');
     const monthLabel = document.getElementById('months-label');
     const monthlyAnnualToggle = document.getElementById('monthlyAnnualToggle');
     const fixedChangingToggle = document.getElementById('fixedChangingToggle');
-    const rateIndexToggle = document.getElementById('rateIndexToggle');
     const yearsUnitLabel = document.getElementById('yearsUnitLabel');
     const fixedMonthlySavingsGroup = document.getElementById('fixedMonthlySavingsGroup');
     const changingMonthlySavingsGroup = document.getElementById('changingMonthlySavingsGroup');
     const fixedRateGroup = document.getElementById('fixedRateGroup');
-    const indexRateGroup = document.getElementById('indexRateGroup');
 
     let monthlySavingsViewBoolean = true; // Controls wether user can input more detailed savings data
     let fixedViewBoolean = true; // Controls wether the input for monthly savings should be fixed or variable
     changingMonthlySavingsGroup.style.display = "none"; // Hide barGraph input (syncs with fixedViewBoolean)
-    let rateIndexBoolean = false; 
-    indexRateGroup.style.display = "none";
 
     // Function to update values when slider changes
     // Set up event listeners for the sliders and inputs
@@ -109,44 +103,6 @@ document.addEventListener("DOMContentLoaded", () => {
             fixedMonthlySavingsGroup.style.display = "none";
         }
         drawMonthlySavingsInputChart();
-        debouncedUpdateResults();
-    });
-
-    rateIndexToggle.addEventListener('change', function () {
-        rateIndexBoolean = !rateIndexBoolean;
-        if (rateIndexBoolean) {
-            fixedRateGroup.style.display = "none";
-            indexRateGroup.style.display = "block";
-        } else {
-            fixedRateGroup.style.display = "block"
-            indexRateGroup.style.display = "none";
-        }
-        drawMonthlySavingsInputChart();
-        debouncedUpdateResults();
-    });
-
-    function updateDates() {
-        // Updates our global date variables
-        startDate = new Date(maxEndDate);
-        if (monthlyAnnualToggle) {
-            startDate.setMonth(startDate.getMonth() - 12 * parseInt(yearsInput.value));
-        } else {
-            startDate.setMonth(startDate.getMonth() - parseInt(yearsInput.value));
-        }
-        endDate = new Date(maxEndDate);
-    }
-
-    // const index = omx30Data;
-    const index = sp500Data;
-    const maxEndDate = new Date(index[index.length - 1][0]);
-    let startDate = new Date(maxEndDate);
-    startDate.setMonth(startDate.getMonth() - 12 * parseInt(yearsInput.value));
-    let endDate = new Date(maxEndDate);
-    console.log("startDate: " + startDate);
-    console.log("endDate: " + endDate);
-    shuffleIndexButton.addEventListener('click', function () {
-        // TODO shuffle end date while ensuring we have enough margin for both start and end date
-        startDate = new Date(maxEndDate).getMonth() - 12 * parseInt(yearsInput.value) - Math.floor(Math.random()*100);
         debouncedUpdateResults();
     });
 
@@ -368,52 +324,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return capitalMonthlyHistory;
     }
 
-    function calculateMonthlyCapitalWithIndex(lumpsum, savingsList, rate, monthlySavingsViewBoolean, index, startDate, endDate) {
-        function getIndexValue(index, date) {
-            // Subfunction that finds closest index date available
-            for (let i = 0; i < index.length; i++) {
-                const indexDate = new Date(index[i][0]);
-                if (indexDate >= date) {
-                    return index[i][1];
-                }
-            }
-        }
-        let capital = lumpsum;
-        let currentDate = new Date(startDate);
-        const capitalMonthlyHistory = [capital];
-        const indexSharesHistory = [lumpsum / getIndexValue(index, currentDate)];
-        let lastTotalShares = indexSharesHistory[0]
-        if (monthlySavingsViewBoolean) {
-            // savingsList is for each year
-            // savingsList is based monthly
-            savingsList.forEach(monthlySavings => {
-                for (let i = 0; i < 12; i++) {
-                    const indexValue = getIndexValue(index, currentDate);
-                    const indexSharesBought = monthlySavings / indexValue;
-                    const totalShares = lastTotalShares + indexSharesBought;
-                    const portfolioValue = totalShares * indexValue;
-                    capitalMonthlyHistory.push(portfolioValue);
-                    currentDate.setMonth(currentDate.getMonth() + 1);
-                    lastTotalShares = totalShares;
-                }
-            });    
-            
-        }
-        else {
-            // savingsList is based monthly
-            savingsList.forEach(monthlySavings => {
-                const indexValue = getIndexValue(index, currentDate);
-                const indexSharesBought = monthlySavings / indexValue;
-                const totalShares = lastTotalShares + indexSharesBought;
-                const portfolioValue = totalShares * indexValue;
-                capitalMonthlyHistory.push(portfolioValue);
-                currentDate.setMonth(currentDate.getMonth() + 1);
-                lastTotalShares = totalShares;
-            });    
-        }
-        return capitalMonthlyHistory;
-    }
-
     function debounce(func, wait) {
         let timeout;
         return function(...args) {
@@ -425,7 +335,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const debouncedUpdateResults = debounce(updateResults, 10);
 
     function updateResults(event) {
-        updateDates();
         const lumpsum = parseFloat(convertTextToNumber(lumpsumInput.value));
         const interestRate = parseFloat(interestRateInput.value) / 100;  // Converts rate as int. percentage to decimal
         const years = parseInt(yearsInput.value);
@@ -441,10 +350,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Get the calculated capital history
         let capitalHistory = calculateMonthlyCapital(lumpsum, savingsList, interestRate, monthlySavingsViewBoolean, event);
-        if (rateIndexBoolean) {
-            // Overwrite capitalHistory with the index data
-            capitalHistory = calculateMonthlyCapitalWithIndex(lumpsum, savingsList, interestRate, monthlySavingsViewBoolean, index, startDate, endDate);
-        }
 
         // Draw the total amount result graph
         plotGraph(resultCanvas, resultContext, capitalHistory, event, "skyblue");
