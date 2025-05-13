@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-
     function formatNumberWithSpaces(number) {
         return new Intl.NumberFormat('sv-SE').format(number); // 'sv-SE' for Swedish locale (spaces as thousand separators)
     }
@@ -235,6 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ctx.fill();
             // drawCircle(ctx, x + barWidth / 2, y, gap / 2, 'skyblue', 'skyblue');
         
+            // Only draw text for non 0 values
             if (originalHeight != 0) {
                 ctx.save(); // Save the current canvas state
                 ctx.translate(x + barWidth / 2, y - 10);
@@ -289,6 +289,14 @@ document.addEventListener("DOMContentLoaded", () => {
         isMousePressed = false; // Mouse button is released
     });
 
+    canvas.addEventListener("mouseleave", () => {
+        isMousePressed = false;
+    });
+
+    canvas.addEventListener("mouseenter", (event) => {
+        // TODO ensure click can handle
+    });
+
     canvas.addEventListener("mousemove", (event) => {
         if (isMousePressed) {
             handleMouseEvent(event); // Update the bar while the mouse is moving and pressed
@@ -316,21 +324,17 @@ document.addEventListener("DOMContentLoaded", () => {
         const newCanvasHeight = canvas.height - BARCHART_FLOOR_Y;
         for (let i = 0; i < barData.length; i++) {
             const x = i * barWidth;
-
             if (mouseX >= x && mouseX <= x + barWidth) {
                 const pixelHeight = Math.max(0, newCanvasHeight - mouseY);
                 // Convert the pixel height to the corresponding bar value
                 const newHeight = (pixelHeight / newCanvasHeight) * tempMaxValue;
                 // Snap the new height to the nearest multiple of SNAP_VALUE
                 const snappedHeight = Math.round(newHeight / SNAP_VALUE) * SNAP_VALUE;
-
                 barData[i] = snappedHeight; // Update the bar data with the snapped value
-
                 drawMonthlySavingsInputChart(); // Redraw the bars with the updated data
                 break;
             }
         }
-
         debouncedUpdateResults(); // Update the results whenever the mouse is dragged over a bar
     }
 
@@ -531,7 +535,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ctx.fillStyle = color;
             ctx.fillRect(x, y, (canvas.width - startX) / capitalHistory.length + 1, canvas.height - y - startY); // Draw the bars representing capital over time
         }
-        
+
         // Draw text for y ticks
         for (let i = tickIncrement; i < maxCapital; i += tickIncrement) {
             const y = canvas.height - (i / maxCapital) * (canvas.height - startY) - startY;
