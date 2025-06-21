@@ -1,25 +1,4 @@
-@media (max-aspect-ratio: 3/4) {
-  .main-content {
-    display: flex;
-    flex-direction: column; /* Stack panels vertically */
-    align-items: center;
-    padding: 0;
-  }
 
-  .left-panel {
-      width: 100%;
-      padding: 0;
-    }
-  .right-panel {
-    width: 100%;
-    padding: 0;
-  }
-
-  main {
-    padding: 0;
-    margin: 0;
-  }
-}
   
   body {
     margin: 0;
@@ -300,3 +279,34 @@ canvas {
   
   
   /* ----------------------------------------------------------------*/
+
+  @media (max-aspect-ratio: 3/4) {
+  .main-content {
+    display: flex;
+    flex-direction: column; /* Stack panels vertically */
+    align-items: center;
+    padding: 0;
+  }
+
+  .left-panel {
+      width: 100%;
+      padding: 0;
+    }
+  .right-panel {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+
+  main {
+    padding: 0;
+    margin: 0;
+  }
+  
+  .empty-frame {
+    box-sizing: content-box;
+    margin:  -20px;
+    padding: 0;
+    width: calc(100% + 10px);;
+  }
+}
